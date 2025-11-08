@@ -1,1 +1,149 @@
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Koulen&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-koulen: "Koulen", sans-serif;
+}
+:root {
+  /* Primary: Rich Dark Brown (Auction House Aesthetic) */
+  --primary: hsl(30 15% 24%);
+  --primary-foreground: hsl(0 0% 98%);
+
+  /* Backgrounds & Cards */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(30 15% 15%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(30 15% 15%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(30 15% 15%);
+
+  /* Secondary: Warm Cream/Beige */
+  --secondary: hsl(40 30% 92%);
+  --secondary-foreground: hsl(30 15% 15%);
+
+  /* Muted: Light Grays */
+  --muted: hsl(210 7% 92%);
+  --muted-foreground: hsl(210 5% 45%);
+
+  /* Accent: Gold/Brass */
+  --accent: hsl(43 74% 66%);
+  --accent-foreground: hsl(30 15% 15%);
+
+  /* Destructive: Red */
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(0 0% 98%);
+
+  /* Borders & Inputs */
+  --border: hsl(210 7% 88%);
+  --input: hsl(210 7% 95%);
+  --ring: hsl(30 15% 24%);
+
+  /* Charts */
+  --chart-1: hsl(43 74% 66%);
+  --chart-2: hsl(30 15% 24%);
+  --chart-3: hsl(40 30% 92%);
+  --chart-4: hsl(210 5% 45%);
+  --chart-5: hsl(0 84.2% 60.2%);
+
+  /* Sidebar */
+  --sidebar-background: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(30 15% 15%);
+  --sidebar-primary: hsl(30 15% 24%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(43 74% 66%);
+  --sidebar-accent-foreground: hsl(30 15% 15%);
+  --sidebar-border: hsl(210 7% 88%);
+  --sidebar-ring: hsl(43 74% 66%);
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --primary: hsl(43 74% 66%);
+  --primary-foreground: hsl(30 15% 15%);
+  --background: hsl(30 15% 12%);
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(30 15% 18%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(30 15% 18%);
+  --popover-foreground: hsl(0 0% 98%);
+  --secondary: hsl(30 15% 25%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(30 15% 30%);
+  --muted-foreground: hsl(210 5% 65%);
+  --accent: hsl(43 74% 66%);
+  --accent-foreground: hsl(30 15% 15%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(30 15% 25%);
+  --input: hsl(30 15% 25%);
+  --ring: hsl(43 74% 66%);
+  --sidebar-background: hsl(30 15% 15%);
+  --sidebar-foreground: hsl(0 0% 98%);
+  --sidebar-primary: hsl(43 74% 66%);
+  --sidebar-primary-foreground: hsl(30 15% 15%);
+  --sidebar-accent: hsl(43 74% 66%);
+  --sidebar-accent-foreground: hsl(30 15% 15%);
+  --sidebar-border: hsl(30 15% 25%);
+  --sidebar-ring: hsl(43 74% 66%);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar-background: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-koulen leading-relaxed tracking-wide;
+  }
+
+  h4,
+  h5,
+  h6 {
+    @apply font-serif;
+  }
+}

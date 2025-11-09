@@ -1,14 +1,6 @@
 <script lang="ts">
-  //   import { auth } from "$lib/stores/auth";
-  let auth = $state({
-    isAuthenticated: false,
-    user: {
-      username: null,
-      avatar: null,
-    },
-    logout: () => {},
-    login: async () => {},
-  });
+  import { goto } from "$app/navigation";
+  import { authClient } from "$lib/auth-client";
 
   let { mode = "login" } = $props<{ mode?: "login" | "signup" }>();
 
@@ -25,43 +17,59 @@
     success = "";
     loading = true;
 
-    // try {
-    //   if (mode === "login") {
-    //     if (!email || !password) {
-    //       error = "Please fill in all fields";
-    //       return;
-    //     }
-    //     const result = await auth.login({ email, password });
-    //     if (result.success) {
-    //       success = "Login successful! Redirecting...";
-    //       setTimeout(() => {
-    //         window.location.href = "/";
-    //       }, 1000);
-    //     } else {
-    //       error = result.error || "Login failed";
-    //     }
-    //   } else {
-    //     if (!email || !password || !username) {
-    //       error = "Please fill in all fields";
-    //       return;
-    //     }
-    //     if (username.length < 3) {
-    //       error = "Username must be at least 3 characters";
-    //       return;
-    //     }
-    //     const result = await auth.signup(email, username, password);
-    //     if (result.success) {
-    //       success = "Signup successful! Redirecting...";
-    //       setTimeout(() => {
-    //         window.location.href = "/";
-    //       }, 1000);
-    //     } else {
-    //       error = result.error || "Signup failed";
-    //     }
-    //   }
-    // } finally {
-    //   loading = false;
-    // }
+    try {
+      if (mode === "login") {
+        if (!email || !password) {
+          error = "Please fill in all fields";
+          return;
+        }
+
+        await authClient.signIn.email(
+          {
+            email,
+            password,
+          },
+          {
+            onSuccess: () => {
+              success = "Login successful! Redirecting...";
+              goto("/", { invalidateAll: true });
+            },
+            onError: (err) => {
+              error = err.error.message || "Login failed";
+            },
+          }
+        );
+      } else {
+        if (!email || !password || !username) {
+          error = "Please fill in all fields";
+          return;
+        }
+
+        if (username.length < 3) {
+          error = "Username must be at least 3 characters";
+          return;
+        }
+
+        await authClient.signUp.email(
+          {
+            email,
+            password,
+            name: username,
+          },
+          {
+            onSuccess: () => {
+              success = "Signup successful! Redirecting...";
+              goto("/", { invalidateAll: true });
+            },
+            onError: (err) => {
+              error = err.error.message || "Signup failed";
+            },
+          }
+        );
+      }
+    } finally {
+      loading = false;
+    }
   }
 </script>
 
@@ -75,10 +83,11 @@
         Username
       </label>
       <input
+        required
         type="text"
         id="username"
         bind:value={username}
-        placeholder="Choose a username"
+        placeholder="Enter a username"
         class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
       />
     </div>
@@ -89,6 +98,7 @@
       Email
     </label>
     <input
+      required
       type="email"
       id="email"
       bind:value={email}
@@ -105,6 +115,7 @@
       Password
     </label>
     <input
+      required
       type="password"
       id="password"
       bind:value={password}
@@ -130,7 +141,7 @@
   <button
     type="submit"
     disabled={loading}
-    class="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
+    class="w-full cursor-pointer bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
   >
     {loading ? "Loading..." : mode === "login" ? "Sign In" : "Create Account"}
   </button>

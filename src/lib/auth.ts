@@ -27,6 +27,5 @@ export const auth = betterAuth({
     // Configure secret for session security
     secret: env.BETTER_AUTH_SECRET,
 
-
     plugins: [sveltekitCookies(getRequestEvent)], // make sure this is the last plugin in the array
 });

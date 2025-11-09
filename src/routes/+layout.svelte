@@ -1,18 +1,12 @@
 <script lang="ts">
   import "../app.css";
   import favicon from "$lib/assets/favicon.svg";
+  import type { Snippet } from "svelte";
+  import type { LayoutData } from "./$types";
+  import { authClient } from "$lib/auth-client";
+  import { goto } from "$app/navigation";
 
-  let { children } = $props();
-
-  let auth = $state({
-    isAuthenticated: true,
-    user: {
-      username: null,
-      avatar: null,
-    },
-    logout: () => {},
-    logIn: () => {},
-  });
+  let { children, data }: { children: Snippet; data: LayoutData } = $props();
 </script>
 
 <svelte:head>
@@ -23,6 +17,17 @@
   class="min-h-screen flex flex-col bg-background mx-8 lg:px-4 lg:mx-auto max-w-7xl"
 >
   <!-- Navigation -->
+  {@render navigation()}
+  <!-- Main Content -->
+  <main class="flex-1">
+    {@render children?.()}
+  </main>
+  <!-- Footer -->
+  {@render footer()}
+</div>
+
+<!-- Navigation Snippet -->
+{#snippet navigation()}
   <nav class="bg-card border-b border-border sticky top-0 z-50">
     <div class="max-w-7xl mx-auto">
       <div class="flex justify-between items-center h-16">
@@ -40,11 +45,7 @@
         </a>
 
         <div class="hidden md:flex items-center gap-8">
-          <!-- <a
-            href="/auctions"
-            class="text-foreground hover:text-primary transition">Auctions</a
-          > -->
-          {#if auth.isAuthenticated}
+          {#if data.sessionId}
             <a
               href="/admin"
               class="text-foreground hover:text-primary transition font-koulen"
@@ -64,28 +65,31 @@
         </div>
 
         <div class="flex items-center gap-4 font-koulen">
-          {#if auth.isAuthenticated && auth.user}
+          {#if data.sessionId && data.user}
             <div class="flex items-center gap-3">
               <img
-                src={auth.user.avatar ||
+                src={data.user.image ||
                   "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
-                alt={auth.user.username}
+                alt={data.user?.name || "Username"}
                 class="w-8 h-8 rounded-full border border-border"
               />
               <span class="text-sm font-medium text-foreground hidden sm:inline"
-                >{auth.user.username || "Username"}</span
+                >{data.user?.name || "Username"}</span
               >
             </div>
             <button
-              onclick={() => auth.logout()}
-              class="px-4 font-koulen py-2 text-foreground hover:bg-muted rounded-lg transition"
+              onclick={async () => {
+                await authClient.signOut();
+                goto("/auth/login", { invalidateAll: true });
+              }}
+              class="px-4 font-koulen cursor-pointer py-2 text-foreground hover:bg-muted rounded-lg transition"
             >
               Sign Out
             </button>
           {:else}
             <a
               href="/auth/login"
-              class="px-4 py-2 font-koulen bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+              class="px-4 py-2 cursor-pointer font-koulen bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
             >
               Sign In
             </a>
@@ -94,13 +98,10 @@
       </div>
     </div>
   </nav>
+{/snippet}
 
-  <!-- Main Content -->
-  <main class="flex-1">
-    {@render children?.()}
-  </main>
-
-  <!-- Footer -->
+<!-- Footer Snippet -->
+{#snippet footer()}
   <footer class="text-secondary-foreground border-t border-border mt-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -153,4 +154,4 @@
       <p>&copy; 2025 Book Bidding. All rights reserved.</p>
     </div>
   </footer>
-</div>
+{/snippet}

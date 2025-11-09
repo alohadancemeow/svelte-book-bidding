@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { page } from "$app/state";
+
   let featuredAuctions = $state([
     {
       id: 1,
@@ -52,6 +54,22 @@
 
 <div class="bg-background">
   <!-- Hero Section -->
+  {@render hero()}
+
+  <!-- Stats Section -->
+  {@render statistics()}
+
+  <!-- Featured Items -->
+  {@render featuredItems()}
+
+  <!-- How It Works -->
+  {@render howItWorks()}
+
+  <!-- CTA Section -->
+  {@render cta()}
+</div>
+
+{#snippet hero()}
   <section
     class="relative overflow-hidden bg-linear-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground pt-20 pb-32"
   >
@@ -84,7 +102,7 @@
               Browse Auctions
             </a>
             <a
-              href="/auth/signup"
+              href={page.data.sessionId ? "/dashboard" : "/auth/signup"}
               class="px-8 py-3 border-2 border-primary-foreground text-primary-foreground rounded-lg hover:bg-primary-foreground/10 transition-all duration-300"
             >
               Join Now
@@ -105,8 +123,9 @@
       </div>
     </div>
   </section>
+{/snippet}
 
-  <!-- Stats Section -->
+{#snippet statistics()}
   <section class="py-16 bg-card border-b border-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -125,8 +144,9 @@
       </div>
     </div>
   </section>
+{/snippet}
 
-  <!-- Featured Auctions -->
+{#snippet featuredItems()}
   <section class="py-20 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
@@ -204,8 +224,9 @@
       </div>
     </div>
   </section>
+{/snippet}
 
-  <!-- How It Works -->
+{#snippet howItWorks()}
   <section class="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50">
     <div class="max-w-7xl mx-auto">
       <h2
@@ -229,8 +250,9 @@
       </div>
     </div>
   </section>
+{/snippet}
 
-  <!-- CTA Section -->
+{#snippet cta()}
   <section
     class="py-16 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground"
   >
@@ -259,4 +281,4 @@
       </div>
     </div>
   </section>
-</div>
+{/snippet}

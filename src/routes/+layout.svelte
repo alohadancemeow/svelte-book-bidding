@@ -47,7 +47,7 @@
         <div class="hidden md:flex items-center gap-8">
           {#if data.sessionId}
             <a
-              href="/admin"
+              href="/dashboard"
               class="text-foreground hover:text-primary transition font-koulen"
               >Dashboard</a
             >

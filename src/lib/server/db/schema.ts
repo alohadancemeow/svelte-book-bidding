@@ -56,3 +56,45 @@ export const verification = sqliteTable("verification", {
 	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
 	...timestampDefaults,
 });
+
+// ITEMS TABLE
+export const Items = sqliteTable("items", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	author: text("author").notNull(), // Book author
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	description: text("description"),
+	fileKey: text("file_key").notNull(),
+	currentBid: integer("current_bid").notNull().default(0),
+	startingPrice: integer("starting_price").notNull().default(0),
+	bidInterval: integer("bid_interval").notNull().default(100),
+	endDate: integer("end_date", { mode: "timestamp_ms" }).notNull(),
+
+	...timestampDefaults,
+});
+
+export const bids = sqliteTable("bids", {
+	id: text("id").primaryKey(),
+	itemId: text("item_id")
+		.notNull()
+		.references(() => Items.id, { onDelete: "cascade" }),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	amount: integer("amount").notNull(),
+	...timestampDefaults,
+});
+
+// BIDS RELATIONS
+export const bidRelations = relations(bids, ({ one }) => ({
+	item: one(Items, {
+		fields: [bids.itemId],
+		references: [Items.id],
+	}),
+	user: one(user, {
+		fields: [bids.userId],
+		references: [user.id],
+	}),
+}));

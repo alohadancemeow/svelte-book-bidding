@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { Datepicker, Label, Timepicker, Fileupload } from "flowbite-svelte";
 
   interface Auction {
     id: string;
@@ -51,140 +51,6 @@
   ]);
 
   let selectedTab = $state("overview");
-  let showCreateModal = $state(false);
-  let editingAuction: Auction | null = $state(null);
-
-  let formData = $state({
-    title: "",
-    author: "",
-    description: "",
-    startingPrice: 0,
-    endDate: "",
-  });
-
-  let selectedDate = $state(new Date());
-  let selectedInlineTime = $state({ time: "12:00" });
-  const timeIntervals = [
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-  ];
-
-  let selectedFiles = $state<FileList | null>(null);
-
-  function handleTimeSelect(data: {
-    time: string;
-    endTime: string;
-    [key: string]: string;
-  }): void {
-    if (data) {
-      selectedInlineTime = {
-        time: data.time,
-      };
-    }
-  }
-
-  $effect(() => {
-    if (!selectedDate) {
-      formData.endDate = "";
-      return;
-    }
-    const yyyy = selectedDate.getFullYear();
-    const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
-    const dd = String(selectedDate.getDate()).padStart(2, "0");
-    if (selectedInlineTime.time) {
-      formData.endDate = `${yyyy}-${mm}-${dd}T${selectedInlineTime.time}`; // e.g. 2025-11-06T14:30
-    } else {
-      formData.endDate = `${yyyy}-${mm}-${dd}`; // date only until time selected
-    }
-  });
-
-  function resetForm() {
-    formData = {
-      title: "",
-      author: "",
-      startingPrice: 0,
-      description: "",
-      endDate: "",
-    };
-    selectedDate = new Date();
-    selectedInlineTime = { time: "12:00" };
-    editingAuction = null;
-    showCreateModal = false;
-  }
-
-  function handleCreateAuction() {
-    if (!formData.title || !formData.author || formData.startingPrice <= 0) {
-      alert("Please fill in all required fields");
-      return;
-    }
-
-    if (!formData.endDate || !selectedInlineTime.time) {
-      alert("Please select an end date and time");
-      return;
-    }
-
-    if (editingAuction) {
-      // Update existing
-      auctions = auctions.map((a) => {
-        if (a.id === editingAuction!.id) {
-          return {
-            ...a,
-            title: formData.title,
-            author: formData.author,
-            startingPrice: formData.startingPrice,
-            endDate: formData.endDate,
-          };
-        }
-        return a;
-      });
-    } else {
-      // Create new
-      const newAuction: Auction = {
-        id: String(Math.max(...auctions.map((a) => parseInt(a.id)), 0) + 1),
-        title: formData.title,
-        author: formData.author,
-        description: formData.description,
-        startingPrice: formData.startingPrice,
-        currentPrice: formData.startingPrice,
-        status: "active",
-        bidsCount: 0,
-        endDate: formData.endDate,
-      };
-      auctions = [newAuction, ...auctions];
-    }
-    resetForm();
-  }
-
-  function startEdit(auction: Auction) {
-    editingAuction = auction;
-    formData = {
-      title: auction.title,
-      author: auction.author,
-      startingPrice: auction.startingPrice,
-      description: auction.description,
-      endDate: auction.endDate,
-    };
-    // Initialize pickers from stored endDate (supports date-only or date+time)
-    try {
-      const [datePart, timePart] = auction.endDate.split("T");
-      selectedDate = new Date(datePart);
-      selectedInlineTime = { time: timePart ?? "" };
-    } catch (e) {
-      selectedDate = new Date();
-      selectedInlineTime = { time: "12:00" };
-    }
-    showCreateModal = true;
-  }
 
   function deleteAuction(id: string) {
     if (confirm("Are you sure you want to delete this auction?")) {
@@ -243,10 +109,7 @@
             </p>
           </div>
           <button
-            onclick={() => {
-              resetForm();
-              showCreateModal = true;
-            }}
+            onclick={() => goto("/dashboard/create")}
             class="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
           >
             Create Auction
@@ -266,145 +129,7 @@
       {@render tabs()}
     </div>
   </div>
-
-  <!-- Create/Edit Modal -->
-  {#if showCreateModal}
-    {@render createModal()}
-  {/if}
 {/if}
-
-<!-- Create/Edit Modal Snippet -->
-{#snippet createModal()}
-  <div
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-  >
-    <div
-      class="bg-card border border-border rounded-lg p-8 w-full max-w-2xl max-h-11/12 overflow-auto"
-    >
-      <h2 class="text-2xl font-bold text-foreground mb-6">
-        {editingAuction ? "Edit Auction" : "Create New Auction"}
-      </h2>
-
-      <form
-        onsubmit={(e) => {
-          e.preventDefault();
-          handleCreateAuction();
-        }}
-        class="space-y-4"
-      >
-        <div>
-          <label
-            for="title"
-            class="block text-sm font-medium text-foreground mb-1"
-          >
-            Title *
-          </label>
-          <input
-            required
-            type="text"
-            id="title"
-            placeholder="Book title"
-            bind:value={formData.title}
-            class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-        <div>
-          <label
-            for="author"
-            class="block text-sm font-medium text-foreground mb-1"
-          >
-            Author *
-          </label>
-          <input
-            type="text"
-            id="author"
-            placeholder="Book author"
-            bind:value={formData.author}
-            class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-        <div>
-          <label
-            for="description"
-            class="block text-sm font-medium text-foreground mb-1"
-          >
-            Description *
-          </label>
-          <textarea
-            required
-            id="description"
-            placeholder="Book description"
-            bind:value={formData.description}
-            class="w-full h-24 px-4 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          ></textarea>
-        </div>
-        <div>
-          <label
-            for="startingPrice"
-            class="block text-sm font-medium text-foreground mb-1"
-          >
-            Starting Price *
-          </label>
-          <input
-            type="number"
-            id="startingPrice"
-            bind:value={formData.startingPrice}
-            min="0"
-            step="50"
-            class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-
-        <div>
-          <Label class="pb-2" for="small_size">Upload Book Cover *</Label>
-          <Fileupload
-            bind:files={selectedFiles}
-            clearable
-            id="small_size"
-            size="sm"
-          />
-        </div>
-
-        <!-- date & time pickers -->
-        <div class="my-8">
-          <div class="dark:border-gray-700">
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <Label class="mb-2">Select Date *</Label>
-                <Datepicker bind:value={selectedDate} inline />
-              </div>
-              <div>
-                <Label class="mb-2">Select Time *</Label>
-                <Timepicker
-                  type="inline-buttons"
-                  value={selectedInlineTime.time}
-                  {timeIntervals}
-                  onselect={handleTimeSelect}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex gap-3 pt-4">
-          <button
-            type="button"
-            onclick={resetForm}
-            class="flex-1 cursor-pointer px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted transition"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="flex-1 cursor-pointer px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
-          >
-            {editingAuction ? "Update" : "Create"}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-{/snippet}
 
 <!-- Stats Snippet -->
 {#snippet stats()}
@@ -528,7 +253,7 @@
               <td class="px-6 py-4 text-sm">
                 <div class="flex gap-2">
                   <button
-                    onclick={() => startEdit(auction)}
+                    onclick={() => goto(`/dashboard/edit/${auction.id}`)}
                     class="px-3 py-1 bg-primary text-primary-foreground rounded text-xs hover:opacity-90"
                   >
                     Edit

@@ -57,8 +57,8 @@ export const verification = sqliteTable("verification", {
 	...timestampDefaults,
 });
 
-// ITEMS TABLE
-export const Items = sqliteTable("items", {
+// BOOKS TABLE
+export const books = sqliteTable("books", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	author: text("author").notNull(), // Book author
@@ -71,6 +71,9 @@ export const Items = sqliteTable("items", {
 	startingPrice: integer("starting_price").notNull().default(0),
 	bidInterval: integer("bid_interval").notNull().default(100),
 	endDate: integer("end_date", { mode: "timestamp_ms" }).notNull(),
+	condition: text("condition").notNull(),
+	yearPublished: integer("year_published").notNull(),
+	pages: integer("pages").notNull(),
 
 	...timestampDefaults,
 });
@@ -79,7 +82,7 @@ export const bids = sqliteTable("bids", {
 	id: text("id").primaryKey(),
 	itemId: text("item_id")
 		.notNull()
-		.references(() => Items.id, { onDelete: "cascade" }),
+		.references(() => books.id, { onDelete: "cascade" }),
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
@@ -87,14 +90,27 @@ export const bids = sqliteTable("bids", {
 	...timestampDefaults,
 });
 
-// BIDS RELATIONS
+// RELATIONS
 export const bidRelations = relations(bids, ({ one }) => ({
-	item: one(Items, {
+	item: one(books, {
 		fields: [bids.itemId],
-		references: [Items.id],
+		references: [books.id],
 	}),
 	user: one(user, {
 		fields: [bids.userId],
 		references: [user.id],
 	}),
+}));
+
+export const bookRelations = relations(books, ({ one, many }) => ({
+	user: one(user, {
+		fields: [books.userId],
+		references: [user.id],
+	}),
+	bids: many(bids),
+}));
+
+export const userRelations = relations(user, ({ many }) => ({
+	books: many(books),
+	bids: many(bids),
 }));

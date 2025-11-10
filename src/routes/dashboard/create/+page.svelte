@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
+  import { applyAction, deserialize } from "$app/forms";
+  import { goto, invalidateAll } from "$app/navigation";
   import { page } from "$app/state";
+  import type { ActionResult } from "@sveltejs/kit";
   import {
     Button,
     Datepicker,
@@ -15,24 +17,29 @@
   import { ClockSolid } from "flowbite-svelte-icons";
 
   interface Auction {
-    id: string;
     title: string;
-    author: string;
+    author: string; // Name of the author
     description: string;
-    currentPrice: number;
+    currentBid: number;
     startingPrice: number;
-    status: "active" | "ending-soon" | "ended";
-    bidsCount: number;
+    // status: "active" | "ending-soon" | "ended";
+    // bidsCount: number;
     endDate: string;
+    pages: number;
+    yearPublished: number;
+    condition: string;
+    filekey: string;
   }
 
   const CONDITIONS = ["Excellent", "Good", "Fine"];
 
+  let loading = $state(false);
   let open = $state(false);
   let modalSelectedDate = $state(new Date());
-  let modalTimeSelection = $state({ time: "10:00", endTime: "11:00" });
+  let modalTimeSelection = $state({ time: "10:00" });
+  let filesInDropzone: FileList | null = $state(null);
 
-  let formData = $state({
+  let formData: Auction = $state({
     title: "",
     author: "",
     description: "",
@@ -41,6 +48,8 @@
     condition: CONDITIONS[1],
     pages: 0,
     yearPublished: 2000,
+    filekey: "",
+    currentBid: 0,
   });
 
   const timeIntervals = [
@@ -58,64 +67,79 @@
     "15:30",
   ];
 
-  //   function resetForm() {
-  //     formData = {
-  //       title: "",
-  //       author: "",
-  //       startingPrice: 0,
-  //       description: "",
-  //       endDate: "",
-  //     };
-  //     selectedDate = new Date();
-  //     selectedInlineTime = { time: "12:00" };
-  //     // editingAuction = null;
-  //     // showCreateModal = false;
-  //   }
+  function resetForm() {
+    formData = {
+      title: "",
+      author: "",
+      startingPrice: 0,
+      description: "",
+      endDate: "",
+      condition: CONDITIONS[1],
+      pages: 0,
+      yearPublished: 2000,
+      filekey: "",
+      currentBid: 0,
+    };
+    modalSelectedDate = new Date();
+    modalTimeSelection = { time: "12:00" };
+  }
 
-  //   function handleCreateAuction() {
-  //     if (!formData.title || !formData.author || formData.startingPrice <= 0) {
-  //       alert("Please fill in all required fields");
-  //       return;
-  //     }
+  const handleCreateAuction = async (
+    event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
+  ) => {
+    event.preventDefault();
+    loading = true;
 
-  //     if (!formData.endDate || !selectedInlineTime.time) {
-  //       alert("Please select an end date and time");
-  //       return;
-  //     }
+    if (
+      !formData.title ||
+      !formData.author ||
+      formData.startingPrice <= 0 ||
+      !formData.condition ||
+      !formData.pages ||
+      !formData.yearPublished ||
+      !filesInDropzone
+    ) {
+      alert("Please fill in all required fields");
+      loading = false;
+      return;
+    }
 
-  //     if (editingAuction) {
-  //       // Update existing
-  //       auctions = auctions.map((a) => {
-  //         if (a.id === editingAuction!.id) {
-  //           return {
-  //             ...a,
-  //             title: formData.title,
-  //             author: formData.author,
-  //             startingPrice: formData.startingPrice,
-  //             endDate: formData.endDate,
-  //           };
-  //         }
-  //         return a;
-  //       });
-  //     } else {
-  //       // Create new
-  //       const newAuction: Auction = {
-  //         id: String(Math.max(...auctions.map((a) => parseInt(a.id)), 0) + 1),
-  //         title: formData.title,
-  //         author: formData.author,
-  //         description: formData.description,
-  //         startingPrice: formData.startingPrice,
-  //         currentPrice: formData.startingPrice,
-  //         status: "active",
-  //         bidsCount: 0,
-  //         endDate: formData.endDate,
-  //       };
-  //       auctions = [newAuction, ...auctions];
-  //     }
-  //     resetForm();
-  //   }
+    if (!modalSelectedDate || !modalTimeSelection.time) {
+      alert("Please select an end date and time");
+      loading = false;
+      return;
+    }
 
-  let filesInDropzone: FileList | null = $state(null);
+    const data = new FormData(event.currentTarget, event.submitter);
+    data.append("currentBid", formData.currentBid.toString());
+    data.append("filekey", filesInDropzone[0].name);
+    data.append(
+      "endDate",
+      `${modalSelectedDate.toISOString().split("T")[0]}T${modalTimeSelection.time}:00.000Z`
+    );
+
+    const response = await fetch(event.currentTarget.action, {
+      method: "POST",
+      body: data,
+    });
+
+    const result: ActionResult = deserialize(await response.text());
+    console.log(result, "result");
+
+    if (result.type === "success") {
+      // rerun all `load` functions, following the successful update
+      await invalidateAll();
+      resetForm();
+      loading = false;
+    }
+
+    if (result.type === "failure") {
+      console.log(result.data?.message || "Failed to create auction");
+      loading = false;
+    }
+
+    applyAction(result);
+  };
 
   function handleOnChange(event: Event) {
     console.log("handleOnChange fired.");
@@ -137,6 +161,7 @@
       .join(", ");
   }
 
+  //    Function to handle date selection in the modal
   function handleModalDateSelect(selectedDate: DateOrRange): void {
     if (selectedDate instanceof Date) {
       modalSelectedDate = selectedDate;
@@ -150,13 +175,11 @@
 
   function handleModalTimeSelect(data?: {
     time: string;
-    endTime: string;
     [key: string]: string;
   }): void {
     if (data) {
       modalTimeSelection = {
         time: data.time,
-        endTime: data.endTime,
       };
     }
   }
@@ -217,10 +240,10 @@
     <div>
       <div class="p-8 w-full overflow-auto">
         <form
-          onsubmit={(e) => {
-            e.preventDefault();
-            // handleCreateAuction();
-          }}
+          method="POST"
+          action="?/createAuction"
+          enctype="multipart/form-data"
+          onsubmit={handleCreateAuction}
           class="space-y-4"
         >
           <div>
@@ -234,6 +257,7 @@
               required
               type="text"
               id="title"
+              name="title"
               placeholder="Book title"
               bind:value={formData.title}
               class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -249,6 +273,7 @@
             <input
               type="text"
               id="author"
+              name="author"
               placeholder="Book author"
               bind:value={formData.author}
               class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -264,6 +289,7 @@
             <textarea
               required
               id="description"
+              name="description"
               placeholder="Book description"
               bind:value={formData.description}
               class="w-full h-24 px-4 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -280,6 +306,7 @@
               <select
                 id="condition"
                 required
+                name="condition"
                 bind:value={formData.condition}
                 class="w-full px-8 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
@@ -299,6 +326,7 @@
                 required
                 type="number"
                 id="pages"
+                name="pages"
                 placeholder="Number of pages"
                 bind:value={formData.pages}
                 class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -315,6 +343,7 @@
                 required
                 type="number"
                 id="yearPublished"
+                name="yearPublished"
                 placeholder="Year published"
                 bind:value={formData.yearPublished}
                 class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -331,6 +360,7 @@
                 required
                 type="number"
                 id="startingPrice"
+                name="startingPrice"
                 bind:value={formData.startingPrice}
                 min="0"
                 step="50"
@@ -362,9 +392,14 @@
           <div class="flex gap-3 pt-4">
             <button
               type="submit"
+              disabled={loading}
               class="flex-1 cursor-pointer px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
             >
-              Create
+              {#if loading}
+                Creating...
+              {:else}
+                Create
+              {/if}
             </button>
           </div>
         </form>

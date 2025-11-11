@@ -15,6 +15,7 @@
     type DateOrRange,
   } from "flowbite-svelte";
   import { ClockSolid } from "flowbite-svelte-icons";
+  import { CONDITIONS, TIME_INTERVALS } from "./constants";
 
   interface Auction {
     title: string;
@@ -30,8 +31,6 @@
     condition: string;
     filekey: string;
   }
-
-  const CONDITIONS = ["Excellent", "Good", "Fine"];
 
   let loading = $state(false);
   let open = $state(false);
@@ -51,21 +50,6 @@
     filekey: "",
     currentBid: 0,
   });
-
-  const timeIntervals = [
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-  ];
 
   function resetForm() {
     formData = {
@@ -110,9 +94,10 @@
       return;
     }
 
+    // Create the auction
     const data = new FormData(event.currentTarget, event.submitter);
     data.append("currentBid", formData.currentBid.toString());
-    data.append("filekey", filesInDropzone[0].name);
+    data.append("file", filesInDropzone[0]);
     data.append(
       "endDate",
       `${modalSelectedDate.toISOString().split("T")[0]}T${modalTimeSelection.time}:00.000Z`
@@ -434,7 +419,7 @@
         <Timepicker
           type="inline-buttons"
           value={modalTimeSelection.time}
-          {timeIntervals}
+          timeIntervals={TIME_INTERVALS}
           onselect={handleModalTimeSelect}
           columns={3}
         />

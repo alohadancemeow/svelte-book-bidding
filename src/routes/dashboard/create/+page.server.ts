@@ -3,6 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { books } from '$lib/server/db/schema';
 import { auth } from '$lib/auth';
+import { uploadFile } from './helpers';
 
 export const actions = {
     createAuction: async (event) => {
@@ -23,15 +24,29 @@ export const actions = {
         const condition = String(form.get('condition') || '').trim();
         const pages = Number(form.get('pages') || 0);
         const yearPublished = Number(form.get('yearPublished') || 0);
-        const filekey = String(form.get('filekey') || '').trim();
         const endDateMs = String(form.get('endDate') || '').trim();
+        const file = form.get('file') as File;
+
+        // console.log(file, 'file');
 
         // Basic validation
-        if (!title || !author || !condition || !filekey) {
+        if (!title || !author || !condition || !file) {
             return fail(400, { message: 'Missing required fields' });
         }
         if (startingPrice <= 0 || pages <= 0 || yearPublished <= 0 || !endDateMs) {
             return fail(400, { message: 'Invalid numeric fields or end date' });
+        }
+
+        // Upload the file to Supabase Storage
+        const { fileKey, err } = await uploadFile({
+            file,
+            filekey: file.name,
+            userId,
+        });
+
+        if (!fileKey || err) {
+            console.log(err, "err");
+            return fail(500, { message: 'Failed to upload file' });
         }
 
         const newAuction = {
@@ -40,7 +55,7 @@ export const actions = {
             author,
             userId,
             description,
-            fileKey: filekey,
+            fileKey,
             currentBid: startingPrice,
             startingPrice,
             endDate: endDateMs,
@@ -50,7 +65,7 @@ export const actions = {
             bidInterval: 100,
         };
 
-        console.log(newAuction, 'newAuction');
+        // console.log(newAuction, 'newAuction');
 
         // Create a new book record (auction)
         try {

@@ -1,7 +1,11 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import { Modal } from "flowbite-svelte";
+  import type { PageProps } from "./$types";
 
+  let { data }: PageProps = $props();
   interface Auction {
     id: string;
     title: string;
@@ -14,54 +18,53 @@
     endDate: string;
   }
 
-  let auctions: Auction[] = $state([
-    {
-      id: "1",
-      title: "First Edition Harry Potter",
-      author: "J.K. Rowling",
-      description: "A classic book about a young wizard.",
-      currentPrice: 1200,
-      startingPrice: 1000,
-      status: "active",
-      bidsCount: 3,
-      endDate: "2025-11-06",
-    },
-    {
-      id: "2",
-      title: "Vintage Shakespeare Collection",
-      author: "William Shakespeare",
-      description: "A collection of Shakespeare's plays and tragedies.",
-      currentPrice: 850,
-      startingPrice: 750,
-      status: "ending-soon",
-      bidsCount: 2,
-      endDate: "2025-11-05",
-    },
-    {
-      id: "3",
-      title: "Rare Science Fiction",
-      author: "Isaac Asimov",
-      description: "A collection of Asimov's science fiction works.",
-      currentPrice: 450,
-      startingPrice: 400,
-      status: "ended",
+  function mapBooksToAuctions(books: typeof data.books): Auction[] {
+    return books.map((book) => ({
+      id: book.id,
+      title: book.name,
+      author: book.author,
+      description: book.description || "",
+      currentPrice: book.currentBid,
+      startingPrice: book.startingPrice,
+      status:
+        book.endDate < new Date()
+          ? "ended"
+          : new Date(book.endDate).getTime() - Date.now() < 5 * 60 * 60 * 1000
+            ? "ending-soon"
+            : "active",
       bidsCount: 0,
-      endDate: "2025-11-01",
-    },
-  ]);
-
-  let selectedTab = $state("overview");
-
-  function deleteAuction(id: string) {
-    if (confirm("Are you sure you want to delete this auction?")) {
-      auctions = auctions.filter((a) => a.id !== id);
-    }
+      endDate: (() => {
+        const end = new Date(book.endDate);
+        const now = new Date();
+        const diffMs = end.getTime() - now.getTime();
+        if (diffMs <= 0) return "Ended";
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""}`;
+        return `${diffHours} hour${diffHours !== 1 ? "s" : ""}`;
+      })(),
+    }));
   }
 
+  let auctions: Auction[] = $state(mapBooksToAuctions(data.books));
+
+  // Recompute auctions when `data.books` updates after actions
+  $effect(() => {
+    auctions = mapBooksToAuctions(data.books);
+  });
+
+  let selectedTab = $state("overview");
   let activeCount: number = $state(0);
   let endedCount: number = $state(0);
   let totalBids: number = $state(0);
   let totalRevenue: number = $state(0);
+
+  let rowLoading: Record<string, boolean> = $state({});
+
+  // Delete confirmation modal and toast state
+  let deleteModalOpen = $state(false);
+  let deleteTargetId: string | null = $state(null);
+  let deleteFormRefs: Record<string, HTMLFormElement | null> = $state({});
 
   $effect(() => {
     activeCount = auctions.filter((a) => a.status === "active").length;
@@ -126,32 +129,35 @@
       {@render stats()}
 
       <!-- Tabs -->
-      {@render tabs()}
+      {#if auctions.length > 0}
+        {@render tabs()}
+      {:else}
+        <p
+          class="text-center text-muted-foreground text-lg font-medium font-koulen"
+        >
+          No auctions available. <br />
+          Please create one to get started.
+        </p>
+      {/if}
     </div>
   </div>
 {/if}
 
 <!-- Stats Snippet -->
 {#snippet stats()}
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-    <div class="bg-card border border-border rounded-lg p-6">
-      <p class="text-sm text-muted-foreground mb-2">Active Auctions</p>
-      <p class="text-3xl font-bold text-foreground">{activeCount}</p>
-    </div>
-    <div class="bg-card border border-border rounded-lg p-6">
-      <p class="text-sm text-muted-foreground mb-2">Total Auctions</p>
-      <p class="text-3xl font-bold text-foreground">{auctions.length}</p>
-    </div>
-    <div class="bg-card border border-border rounded-lg p-6">
-      <p class="text-sm text-muted-foreground mb-2">Total Bids</p>
-      <p class="text-3xl font-bold text-accent">{totalBids}</p>
-    </div>
-    <div class="bg-card border border-border rounded-lg p-6">
-      <p class="text-sm text-muted-foreground mb-2">Completed Revenue</p>
-      <p class="text-3xl font-bold text-foreground">
-        ${totalRevenue.toLocaleString()}
-      </p>
-    </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
+    {#each [{ label: "Total", value: auctions.length }, { label: "Active", value: activeCount }, { label: "Ended", value: endedCount }, { label: "Bids", value: totalBids, accent: true }, { label: "Revenue", value: `$${totalRevenue.toLocaleString()}` }] as stat}
+      <div
+        class="bg-card border border-border rounded-lg p-4 flex flex-col items-center justify-center"
+      >
+        <p class="text-xs text-muted-foreground mb-1">{stat.label}</p>
+        <p
+          class={`text-xl font-koulen font-bold ${stat.accent ? "text-accent" : "text-foreground"}`}
+        >
+          {stat.value}
+        </p>
+      </div>
+    {/each}
   </div>
 {/snippet}
 
@@ -162,7 +168,7 @@
       {#each ["overview", "active", "ended"] as tab}
         <button
           onclick={() => (selectedTab = tab)}
-          class={`flex-1 px-6 py-4 font-medium transition ${
+          class={`flex-1 px-6 py-2 font-medium transition ${
             selectedTab === tab
               ? "bg-primary text-primary-foreground"
               : "bg-card text-foreground hover:bg-muted"
@@ -254,16 +260,42 @@
                 <div class="flex gap-2">
                   <button
                     onclick={() => goto(`/dashboard/edit/${auction.id}`)}
-                    class="px-3 py-1 bg-primary text-primary-foreground rounded text-xs hover:opacity-90"
+                    class="px-3 py-1 cursor-pointer bg-primary text-primary-foreground rounded text-xs hover:opacity-90"
                   >
                     Edit
                   </button>
-                  <button
-                    onclick={() => deleteAuction(auction.id)}
-                    class="px-3 py-1 bg-destructive text-destructive-foreground rounded text-xs hover:opacity-90"
+
+                  <form
+                    action="?/deleteAuction"
+                    method="POST"
+                    bind:this={deleteFormRefs[auction.id]}
+                    use:enhance={() => {
+                      rowLoading[auction.id] = true;
+
+                      return async ({ result, update }) => {
+                        if (result?.status === 200) {
+                          update();
+                        } else {
+                          console.error("Failed to delete auction");
+                        }
+                        rowLoading[auction.id] = false;
+                      };
+                    }}
+                    class="inline"
                   >
-                    Delete
-                  </button>
+                    <input type="hidden" name="auctionId" value={auction.id} />
+                    <button
+                      type="button"
+                      onclick={() => {
+                        deleteTargetId = auction.id;
+                        deleteModalOpen = true;
+                      }}
+                      disabled={rowLoading[auction.id]}
+                      class="px-3 cursor-pointer py-1 bg-destructive text-destructive-foreground rounded text-xs hover:opacity-90"
+                    >
+                      {rowLoading[auction.id] ? "Deleting..." : "Delete"}
+                    </button>
+                  </form>
                 </div>
               </td>
             </tr>
@@ -273,3 +305,29 @@
     </div>
   </div>
 {/snippet}
+
+<!-- Delete Confirmation Modal -->
+<Modal bind:open={deleteModalOpen} title="Confirm Deletion" class="w-80">
+  <p class="text-sm text-muted-foreground">
+    Are you sure you want to delete this auction? This action cannot be undone.
+  </p>
+  <div class="flex justify-end gap-3">
+    <button
+      class="px-3 py-1 cursor-pointer bg-muted text-foreground rounded text-xs hover:opacity-90"
+      onclick={() => (deleteModalOpen = false)}
+    >
+      Cancel
+    </button>
+    <button
+      class="px-3 cursor-pointer py-1 bg-destructive text-white rounded text-xs hover:opacity-90"
+      onclick={() => {
+        if (deleteTargetId && deleteFormRefs[deleteTargetId]) {
+          deleteFormRefs[deleteTargetId]?.requestSubmit();
+        }
+        deleteModalOpen = false;
+      }}
+    >
+      Delete
+    </button>
+  </div>
+</Modal>

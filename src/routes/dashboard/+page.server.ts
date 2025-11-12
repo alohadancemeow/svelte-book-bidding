@@ -3,7 +3,7 @@ import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { books } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
-import { BUCKET_NAME } from "./create/constants";
+import { BUCKET_NAME } from "./shared/constants";
 import { supabase } from "$lib/supabase-client";
 
 export const load: PageServerLoad = async ({ locals }) => {

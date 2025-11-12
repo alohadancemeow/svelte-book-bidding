@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { books } from '$lib/server/db/schema';
 import { auth } from '$lib/auth';
-import { uploadFile } from './helpers';
+import { uploadFile } from '../shared/helpers';
 
 export const actions = {
     createAuction: async (event) => {
@@ -78,8 +78,5 @@ export const actions = {
         // Redirect back to dashboard after creation
         throw redirect(303, '/dashboard');
     },
-    deleteAuction: async (event) => {
-        // TODO delete the auction
-    }
 
 } satisfies Actions;

@@ -32,3 +32,21 @@ export const uploadFile = async ({ file, filekey, userId }: { file: File, fileke
         fileKey: data.path,
     };
 }
+
+// Delete file from Supabase Storage
+export const deleteFile = async (fileKey: string) => {
+    if (!fileKey) {
+        throw new Error('File key is required');
+    }
+
+    const { error } = await supabase.storage.from(BUCKET_NAME).remove([fileKey]);
+
+    if (error) {
+        console.log(error, "error");
+        return { err: error.message };
+    }
+
+    return {
+        message: 'File deleted successfully',
+    };
+}

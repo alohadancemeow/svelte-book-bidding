@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import HeaderSection from "../shared/Header.svelte";
+  import HeaderSection from "$lib/components/Header.svelte";
   import FormField from "../shared/FormField.svelte";
   import Unauthentication from "../shared/Unauthentication.svelte";
 </script>
@@ -17,6 +17,7 @@
     <HeaderSection
       title="Create New Auction"
       description="Create a new auction to start a bid on a book."
+      withButton
     />
 
     <!-- Main Content -->

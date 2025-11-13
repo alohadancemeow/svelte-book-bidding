@@ -1,10 +1,7 @@
-import type { LayoutLoad } from './$types'
-import { db } from '$lib/server/db';
-import { getImage } from './helpers';
+import { db } from "$lib/server/db";
+import { getImage } from "../helpers";
 
-export const prerender = false;
-
-export const load: LayoutLoad = async ({ }) => {
+export const load = async ({ }) => {
     // load book auctions
     const books = await db.query.books.findMany({
         with: {

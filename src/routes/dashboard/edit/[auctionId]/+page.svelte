@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import HeaderSection from "../../shared/Header.svelte";
+  import HeaderSection from "$lib/components/Header.svelte";
   import FormField from "../../shared/FormField.svelte";
   import Unauthentication from "../../shared/Unauthentication.svelte";
 
@@ -21,6 +21,7 @@
     <HeaderSection
       title="Edit Auction"
       description="Update auction details and image or end date"
+      withButton
     />
 
     <!-- Main Content -->

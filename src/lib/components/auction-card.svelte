@@ -1,27 +1,8 @@
 <script lang="ts">
-  interface Auction {
-    id: string;
-    title: string;
-    author: string;
-    currentPrice: number;
-    highestBid: number;
-    timeRemaining: string;
-    image: string;
-    status: "active" | "ending-soon" | "ended";
-  }
+  import type { Auction } from "../../routes/helpers";
+  import { Badge } from "flowbite-svelte";
 
-  let { auction } = $props<{ auction: Auction }>();
-
-  const getBadgeClass = (status: string) => {
-    switch (status) {
-      case "ending-soon":
-        return "auction-badge bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      case "ended":
-        return "auction-badge bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
-      default:
-        return "auction-badge auction-badge-active";
-    }
-  };
+  let { auction }: { auction: Auction } = $props();
 
   const getTimeColor = (status: string) => {
     return status === "ending-soon"
@@ -34,18 +15,19 @@
   <!-- Image -->
   <div class="relative mb-4 overflow-hidden rounded-md bg-muted h-48">
     <img
-      src={auction.image || "/placeholder.svg"}
+      src={auction.image ||
+        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
       alt={auction.title}
       class="w-full h-full object-cover hover:scale-105 transition-transform"
     />
     <div class="absolute top-2 right-2">
-      <span class={getBadgeClass(auction.status)}>
-        {auction.status === "ending-soon"
-          ? "⏰ Ending Soon"
-          : auction.status === "ended"
-            ? "Ended"
-            : "Active"}
-      </span>
+      {#if auction.status === "ending-soon"}
+        <Badge color="yellow" class="auction-badge">⏰ Ending Soon</Badge>
+      {:else if auction.status === "ended"}
+        <Badge color="gray" class="auction-badge">Ended</Badge>
+      {:else}
+        <Badge color="green" class="auction-badge">Active</Badge>
+      {/if}
     </div>
   </div>
 
@@ -62,30 +44,28 @@
     <div class="space-y-1 border-t border-border pt-3">
       <div class="flex justify-between items-center text-sm">
         <span class="text-muted-foreground">Current Bid</span>
-        <span class="font-bold text-accent text-lg"
-          >${auction.currentPrice.toLocaleString()}</span
-        >
+        <span class="font-bold text-accent text-lg">
+          ${auction.startingPrice.toLocaleString()}
+        </span>
       </div>
-      {#if auction.highestBid > 0}
+      {#if auction.currentPrice > 0}
         <div
           class="flex justify-between items-center text-xs text-muted-foreground"
         >
           <span>Highest Bid</span>
-          <span>${auction.highestBid.toLocaleString()}</span>
+          <span>${auction.currentPrice.toLocaleString()}</span>
         </div>
       {/if}
     </div>
 
-    <!-- Time Remaining -->
     <div
       class={`text-center font-medium text-sm py-2 bg-accent/5 rounded ${getTimeColor(auction.status)}`}
     >
-      {auction.timeRemaining}
+      {auction.endDate}
     </div>
 
-    <!-- CTA Button -->
     <button
-      class="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 transition text-sm"
+      class="w-full cursor-pointer bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 transition text-sm"
     >
       {auction.status === "ended" ? "View Details" : "Place Bid"}
     </button>

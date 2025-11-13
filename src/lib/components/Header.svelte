@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
 
-  let { title, description } = $props();
+  let { title, description, withButton = false } = $props();
 </script>
 
 <div
@@ -13,12 +13,14 @@
         <h1 class="text-4xl font-bold text-foreground">{title}</h1>
         <p class="text-muted-foreground mt-2">{description}</p>
       </div>
-      <button
-        onclick={() => goto("/dashboard")}
-        class="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
-      >
-        Back to Dashboard
-      </button>
+      {#if withButton}
+        <button
+          onclick={() => goto("/dashboard")}
+          class="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
+        >
+          Back to Dashboard
+        </button>
+      {/if}
     </div>
   </div>
 </div>

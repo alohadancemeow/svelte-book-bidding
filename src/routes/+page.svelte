@@ -1,55 +1,54 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import type { PageProps } from "./$types";
 
-  let featuredAuctions = $state([
-    {
-      id: 1,
-      title: "First Edition: The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      condition: "Excellent",
-      currentBid: 2500,
-      endsIn: "2 days",
-      image:
-        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
-    },
-    {
-      id: 2,
-      title: "Signed Copy: To Kill a Mockingbird",
-      author: "Harper Lee",
-      condition: "Fine",
-      currentBid: 1800,
-      endsIn: "1 day",
-      image:
-        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
-    },
-    {
-      id: 3,
-      title: "Rare: The Hobbit First Edition",
-      author: "J.R.R. Tolkien",
-      condition: "Very Good",
-      currentBid: 3200,
-      endsIn: "3 days",
-      image:
-        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
-    },
-    {
-      id: 4,
-      title: "Vintage: Pride and Prejudice 1894",
-      author: "Jane Austen",
-      condition: "Good",
-      currentBid: 1200,
-      endsIn: "5 hours",
-      image:
-        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
-    },
-  ]);
+  let { data }: PageProps = $props();
 
-  let stats = [
-    { label: "Active Auctions", value: "2,847" },
-    { label: "Rare Books", value: "12,500+" },
-    { label: "Happy Collectors", value: "8,900+" },
-    { label: "Total Sales", value: "$2.3M" },
-  ];
+  const formatEndDate = (endDate: Date | string) => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end.getTime() - now.getTime();
+    if (diff <= 0) return "Ended";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days} day${days > 1 ? "s" : ""}`;
+
+    return `${hours} hour${hours !== 1 ? "s" : ""}`;
+  };
+
+  interface Stat {
+    activeAuctions: number;
+    rareBooks: number;
+    happyCollectors: number;
+    totalSales: number;
+  }
+
+  // create stats from data
+  const stats: Stat = {
+    activeAuctions: data.books.filter(
+      (book) => new Date(book.endDate) > new Date()
+    ).length,
+    rareBooks: data.books.length,
+    happyCollectors: (() => {
+      const now = new Date();
+      const winners = new Set<string>();
+
+      data.books.forEach((book) => {
+        if (new Date(book.endDate) <= now && book.bids && book.bids.length) {
+          const winner = book.bids.reduce((max, bid) =>
+            bid.amount > max.amount ? bid : max
+          );
+          winners.add(winner.userId);
+        }
+      });
+      return winners.size;
+    })(),
+    totalSales: data.books
+      .filter((book) => new Date(book.endDate) <= new Date())
+      .reduce((acc, book) => acc + (book.currentBid || 0), 0),
+  };
 </script>
 
 <div class="bg-background">
@@ -69,6 +68,89 @@
   {@render cta()}
 </div>
 
+{#snippet featuredItems()}
+  <section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          Featured Auctions
+        </h2>
+        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Handpicked collection of the finest books currently up for auction
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {#each data.books as book (book.id)}
+          <a href={`/auctions/${book.id}`} class="group">
+            <div
+              class="bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-xl"
+            >
+              <!-- Image -->
+              <div class="relative h-64 overflow-hidden bg-muted">
+                <img
+                  src={book.fileKey ||
+                    "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
+                  alt={book.name}
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div
+                  class="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold"
+                >
+                  {book.condition}
+                </div>
+                <div
+                  class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-4 text-white"
+                >
+                  <p class="text-sm opacity-90">
+                    {formatEndDate(book.endDate)}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Content -->
+              <div class="p-4">
+                <h3
+                  class="font-medium text-lg text-foreground mb-1 line-clamp-2 group-hover:text-primary transition-colors"
+                >
+                  {book.name}
+                </h3>
+                <p class="text-sm text-muted-foreground mb-4">
+                  {book.author}
+                </p>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col gap-1.5">
+                    <p class="text-xs text-muted-foreground">Current Bid</p>
+                    <p class="text-2xl tracking-wider font-koulen">
+                      ${book.currentBid.toLocaleString()}
+                    </p>
+                  </div>
+                  <div
+                    class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                  >
+                    →
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        {/each}
+      </div>
+
+      <div class="text-center mt-12">
+        <a
+          href="/auctions"
+          class="inline-block font-koulen tracking-wider px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+        >
+          View All Auctions
+        </a>
+      </div>
+    </div>
+  </section>
+{/snippet}
+
+<!-- Hero Section -->
 {#snippet hero()}
   <section
     class="relative overflow-hidden bg-linear-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground pt-20 pb-32"
@@ -125,107 +207,57 @@
   </section>
 {/snippet}
 
+<!-- Statistics Section -->
 {#snippet statistics()}
   <section class="py-16 bg-card border-b border-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        {#each stats as stat (stat.label)}
-          <div class="text-center">
-            <div
-              class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
-            >
-              {stat.value}
-            </div>
-            <div class="text-sm md:text-base text-muted-foreground">
-              {stat.label}
-            </div>
+        <div class="text-center">
+          <div
+            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
+          >
+            {stats.activeAuctions}
           </div>
-        {/each}
+          <div class="text-sm md:text-base text-muted-foreground">
+            Active Auctions
+          </div>
+        </div>
+        <div class="text-center">
+          <div
+            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
+          >
+            {stats.rareBooks}
+          </div>
+          <div class="text-sm md:text-base text-muted-foreground">
+            Rare Books
+          </div>
+        </div>
+        <div class="text-center">
+          <div
+            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
+          >
+            {stats.happyCollectors}
+          </div>
+          <div class="text-sm md:text-base text-muted-foreground">
+            Happy Collectors
+          </div>
+        </div>
+        <div class="text-center">
+          <div
+            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
+          >
+            {`$${stats.totalSales}`}
+          </div>
+          <div class="text-sm md:text-base text-muted-foreground">
+            Total Sales
+          </div>
+        </div>
       </div>
     </div>
   </section>
 {/snippet}
 
-{#snippet featuredItems()}
-  <section class="py-20 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-4">
-          Featured Auctions
-        </h2>
-        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Handpicked collection of the finest books currently up for auction
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {#each featuredAuctions as auction (auction.id)}
-          <a href={`/auctions/${auction.id}`} class="group">
-            <div
-              class="bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-xl"
-            >
-              <!-- Image -->
-              <div class="relative h-64 overflow-hidden bg-muted">
-                <img
-                  src={auction.image ||
-                    "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
-                  alt={auction.title}
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div
-                  class="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold"
-                >
-                  {auction.condition}
-                </div>
-                <div
-                  class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-4 text-white"
-                >
-                  <p class="text-sm opacity-90">{auction.endsIn}</p>
-                </div>
-              </div>
-
-              <!-- Content -->
-              <div class="p-4">
-                <h3
-                  class="font-medium text-lg text-foreground mb-1 line-clamp-2 group-hover:text-primary transition-colors"
-                >
-                  {auction.title}
-                </h3>
-                <p class="text-sm text-muted-foreground mb-4">
-                  {auction.author}
-                </p>
-
-                <div class="flex items-center justify-between">
-                  <div class="flex flex-col gap-1.5">
-                    <p class="text-xs text-muted-foreground">Current Bid</p>
-                    <p class="text-2xl tracking-wider font-koulen">
-                      ${auction.currentBid.toLocaleString()}
-                    </p>
-                  </div>
-                  <div
-                    class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                  >
-                    →
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        {/each}
-      </div>
-
-      <div class="text-center mt-12">
-        <a
-          href="/auctions"
-          class="inline-block font-koulen tracking-wider px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-        >
-          View All Auctions
-        </a>
-      </div>
-    </div>
-  </section>
-{/snippet}
-
+<!-- How It Works Section -->
 {#snippet howItWorks()}
   <section class="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50">
     <div class="max-w-7xl mx-auto">
@@ -252,6 +284,7 @@
   </section>
 {/snippet}
 
+<!-- Call-to-Action Section -->
 {#snippet cta()}
   <section
     class="py-16 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground"

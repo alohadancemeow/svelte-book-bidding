@@ -1,4 +1,4 @@
-import type { bids, books } from "$lib/server/db/schema";
+import type { bids, books, user } from "$lib/server/db/schema";
 import { supabase } from "$lib/supabase-client";
 import { BUCKET_NAME } from "./dashboard/shared/constants";
 import type { InferSelectModel } from "drizzle-orm";
@@ -11,36 +11,27 @@ export const getImage = ({ filekey }: { filekey: string }) => {
     return publicUrl
 };
 
-export interface Auction {
-    id: string;
-    title: string;
-    author: string;
-    description: string;
-    currentPrice: number;
-    startingPrice: number;
-    status: "active" | "ending-soon" | "ended";
-    bidsCount: number;
-    endDate: string;
-    image: string;
-}
 
 type BookRow = InferSelectModel<typeof books>;
 type BidRow = InferSelectModel<typeof bids>;
-export type BooksWithBids = BookRow & { bids: BidRow[] };
+type UserRow = InferSelectModel<typeof user>;
+export type BooksWithBids = BookRow & { bids: (BidRow & { user: Partial<UserRow> })[] } & { user: Partial<UserRow> };
 
-export function mapBooksToAuctions(books: BooksWithBids[]): Auction[] {
+export type Auction = Partial<Omit<BookRow, "endDate">> & {
+    status: "active" | "ending-soon" | "ended";
+    bidsCount: number;
+    image: string;
+    bids: (BidRow & { user: Partial<UserRow> })[];
+    endDate: string;
+}
 
+export const mapBooksToAuctions = (books: BooksWithBids[]) => {
     return books.map((book) => {
         const endMs = new Date(book.endDate).getTime();
         const diffMs = endMs - Date.now();
 
         return {
-            id: book.id,
-            title: book.name,
-            author: book.author,
-            description: book.description || "",
-            currentPrice: book.currentBid,
-            startingPrice: book.startingPrice,
+            ...book,
             status: diffMs <= 0
                 ? "ended"
                 : diffMs < 5 * 60 * 60 * 1000
@@ -57,6 +48,11 @@ export function mapBooksToAuctions(books: BooksWithBids[]): Auction[] {
 
                 return `${diffHours} hour${diffHours !== 1 ? "s" : ""}`;
             })(),
+            bids: book.bids.map((bid) => ({
+                ...bid,
+                user: bid.user || {},
+            })),
+            user: book.user || {},
         };
     });
 }

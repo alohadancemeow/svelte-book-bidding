@@ -2,7 +2,7 @@
   import type { Auction } from "../../routes/helpers";
   import { Badge } from "flowbite-svelte";
 
-  let { auction }: { auction: Auction } = $props();
+  let { auction }: { auction: Partial<Auction> } = $props();
 
   const getTimeColor = (status: string) => {
     return status === "ending-soon"
@@ -17,7 +17,7 @@
     <img
       src={auction.image ||
         "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
-      alt={auction.title}
+      alt={auction.name}
       class="w-full h-full object-cover hover:scale-105 transition-transform"
     />
     <div class="absolute top-2 right-2">
@@ -35,7 +35,7 @@
   <div class="space-y-3">
     <div>
       <h3 class="font-bold text-foreground line-clamp-2 text-sm">
-        {auction.title}
+        {auction.name}
       </h3>
       <p class="text-xs text-muted-foreground">by {auction.author}</p>
     </div>
@@ -45,21 +45,21 @@
       <div class="flex justify-between items-center text-sm">
         <span class="text-muted-foreground">Current Bid</span>
         <span class="font-bold text-accent text-lg">
-          ${auction.startingPrice.toLocaleString()}
+          ${auction?.startingPrice?.toLocaleString() || "N/A"}
         </span>
       </div>
-      {#if auction.currentPrice > 0}
+      {#if auction?.currentBid && auction.currentBid > 0}
         <div
           class="flex justify-between items-center text-xs text-muted-foreground"
         >
           <span>Highest Bid</span>
-          <span>${auction.currentPrice.toLocaleString()}</span>
+          <span>${auction?.currentBid?.toLocaleString() || "N/A"}</span>
         </div>
       {/if}
     </div>
 
     <div
-      class={`text-center font-medium text-sm py-2 bg-accent/5 rounded ${getTimeColor(auction.status)}`}
+      class={`text-center font-medium text-sm py-2 bg-accent/5 rounded ${getTimeColor(auction?.status || "")}`}
     >
       {auction.endDate}
     </div>

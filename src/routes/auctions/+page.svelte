@@ -22,7 +22,7 @@
   const filteredAuctions = () => {
     let result = auctions.filter((auction) => {
       const matchesSearch =
-        auction.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        auction.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         auction.author.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
         selectedStatus === "all" || auction.status === selectedStatus;
@@ -32,10 +32,10 @@
     // Sort auctions
     switch (sortBy) {
       case "price-low":
-        result.sort((a, b) => a.currentPrice - b.currentPrice);
+        result.sort((a, b) => a.startingPrice - b.startingPrice);
         break;
       case "price-high":
-        result.sort((a, b) => b.currentPrice - a.currentPrice);
+        result.sort((a, b) => b.startingPrice - a.startingPrice);
         break;
       case "ending-soon":
         result.sort((a, b) => {
@@ -181,7 +181,16 @@
       >
         {#each paginatedAuctions() as auction (auction.id)}
           <div class="h-full">
-            <AuctionCard {auction} />
+            <AuctionCard
+              auction={{
+                ...auction,
+                status: auction.status as "active" | "ending-soon" | "ended",
+                bids: auction.bids.map((bid) => ({
+                  ...bid,
+                  user: bid.user || {},
+                })),
+              }}
+            />
           </div>
         {/each}
       </div>

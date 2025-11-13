@@ -5,7 +5,12 @@ export const load = async ({ }) => {
     // load book auctions
     const books = await db.query.books.findMany({
         with: {
-            bids: true,
+            bids: {
+                with: {
+                    user: true,
+                }
+            },
+            user: true,
         }
     });
 

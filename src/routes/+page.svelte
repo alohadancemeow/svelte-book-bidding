@@ -122,9 +122,18 @@
                 <div class="flex items-center justify-between">
                   <div class="flex flex-col gap-1.5">
                     <p class="text-xs text-muted-foreground">Current Bid</p>
-                    <p class="text-2xl tracking-wider font-koulen">
-                      ${book.currentBid.toLocaleString()}
-                    </p>
+                    <div class="flex gap-1.5 items-baseline">
+                      <p class="text-2xl tracking-wider font-koulen">
+                        ${book.currentBid.toLocaleString()}
+                      </p>
+                      {#if book.startingPrice < book.currentBid}
+                        <p
+                          class="text-xs tracking-wider font-koulen text-destructive line-through"
+                        >
+                          ${book.startingPrice.toLocaleString()}
+                        </p>
+                      {/if}
+                    </div>
                   </div>
                   <div
                     class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all"
@@ -300,10 +309,10 @@
         class="flex gap-4 items-center justify-center flex-wrap font-koulen tracking-wider"
       >
         <a
-          href="/auth/signup"
+          href={page.data.sessionId ? "/dashboard/create" : "/auth/signup"}
           class="px-6 py-2 bg-primary-foreground text-primary rounded-lg hover:shadow-lg transition-all"
         >
-          Create Account
+          {page.data.sessionId ? "Create Auction" : "Create Account"}
         </a>
         <a
           href="/auctions"

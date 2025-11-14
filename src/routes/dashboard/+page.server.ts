@@ -16,6 +16,9 @@ export const load: PageServerLoad = async ({ locals }) => {
     // get user's books
     const books = await db.query.books.findMany({
         where: (books, { eq }) => eq(books.userId, locals.user?.id),
+        with: {
+            bids: true,
+        },
     });
 
     return { books };

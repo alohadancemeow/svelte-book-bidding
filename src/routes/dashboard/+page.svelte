@@ -32,7 +32,7 @@
           : new Date(book.endDate).getTime() - Date.now() < 5 * 60 * 60 * 1000
             ? "ending-soon"
             : "active",
-      bidsCount: 0,
+      bidsCount: book.bids?.length || 0,
       endDate: (() => {
         const end = new Date(book.endDate);
         const now = new Date();
@@ -112,10 +112,11 @@
             </p>
           </div>
           <button
-            onclick={() => goto("/dashboard/create")}
+            onclick={() =>
+              goto(`/dashboard/${page.data?.sessionId ? "create" : ""}`)}
             class="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
           >
-            Create Auction
+            {page.data?.sessionId ? "Create Auction" : "Create Account"}
           </button>
         </div>
       </div>

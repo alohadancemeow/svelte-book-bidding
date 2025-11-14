@@ -140,10 +140,18 @@
     if (filesInDropzone && filesInDropzone[0]) {
       data.append("file", filesInDropzone[0]);
     }
-    data.append(
-      "endDate",
-      `${modalSelectedDate.toISOString().split("T")[0]}T${modalTimeSelection.time}:00.000Z`
-    );
+
+    const year = modalSelectedDate.getFullYear();
+    const month = String(modalSelectedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(modalSelectedDate.getDate()).padStart(2, "0");
+    const [hhStr, mmStr] = modalTimeSelection.time.split(":");
+    const hh = Number(hhStr);
+    const mm = Number(mmStr);
+    const endUtcIso = new Date(
+      Date.UTC(year, Number(month) - 1, Number(day), hh, mm, 0)
+    ).toISOString();
+
+    data.append("endDate", endUtcIso);
 
     if (mode === "edit" && auctionId) {
       data.append("auctionId", auctionId);

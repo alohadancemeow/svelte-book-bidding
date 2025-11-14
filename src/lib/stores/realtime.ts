@@ -2,6 +2,7 @@ import { writable, derived } from "svelte/store"
 
 interface BidUpdate {
     auctionId: string
+    auctionName: string
     bidder: string
     amount: number
     timestamp: string
@@ -13,7 +14,7 @@ interface ActiveListener {
 }
 
 let listeners: ActiveListener[] = []
-let broadcastInterval: number | null = null
+let eventSource: EventSource | null = null
 
 function createRealtimeStore() {
     const updates = writable<BidUpdate[]>([])
@@ -28,8 +29,20 @@ function createRealtimeStore() {
             connectionStatus.set("connected")
             console.log("[v0] Real-time connection established")
 
-            if (!broadcastInterval) {
-                broadcastInterval = setInterval(simulateBidBroadcast, 5000) as any
+            // Set up event source for bid updates
+            if (!eventSource) {
+                eventSource = new EventSource("/realtime/bids")
+                eventSource.onmessage = (e) => {
+                    try {
+                        const data = JSON.parse(e.data) as BidUpdate
+                        broadcastBid(data.auctionId, data.bidder, data.amount, data.auctionName)
+                    } catch (error) {
+                        console.error("Error processing bid update:", error)
+                    }
+                }
+                eventSource.onerror = () => {
+                    connectionStatus.set("disconnected")
+                }
             }
         }, 500)
     }
@@ -38,13 +51,14 @@ function createRealtimeStore() {
         isConnected.set(false)
         connectionStatus.set("disconnected")
 
-        if (broadcastInterval) {
-            clearInterval(broadcastInterval)
-            broadcastInterval = null
-        }
-
         listeners = []
         updates.set([])
+
+        // Close event source if it exists
+        if (eventSource) {
+            eventSource.close()
+            eventSource = null
+        }
         console.log("[v0] Real-time connection closed")
     }
 
@@ -58,9 +72,10 @@ function createRealtimeStore() {
         }
     }
 
-    function broadcastBid(auctionId: string, bidder: string, amount: number) {
+    function broadcastBid(auctionId: string, bidder: string, amount: number, auctionName: string) {
         const update: BidUpdate = {
             auctionId,
+            auctionName,
             bidder,
             amount,
             timestamp: new Date().toLocaleTimeString(),
@@ -71,19 +86,6 @@ function createRealtimeStore() {
         listeners.filter((l) => l.auctionId === auctionId).forEach((l) => l.callback(update))
 
         console.log("[v0] Bid broadcast:", update)
-    }
-
-    function simulateBidBroadcast() {
-        const mockBidders = ["CollectorPro", "VintageFind", "BookLover45", "RareBooks", "AuctionKing"]
-        const activeAuctions = ["1", "2", "4", "5", "6"]
-
-        if (Math.random() > 0.7 && listeners.length > 0) {
-            const randomAuction = activeAuctions[Math.floor(Math.random() * activeAuctions.length)]
-            const randomBidder = mockBidders[Math.floor(Math.random() * mockBidders.length)]
-            const randomAmount = Math.floor(Math.random() * 5000) + 500
-
-            broadcastBid(randomAuction, randomBidder, randomAmount)
-        }
     }
 
     return {

@@ -3,6 +3,7 @@ import { error, fail, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { getImage } from "../../helpers";
 import { bids, books } from "$lib/server/db/schema";
+import { publishBid } from "$lib/server/realtime";
 import { eq } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -35,9 +36,9 @@ export const load: PageServerLoad = async ({ params }) => {
 export const actions = {
     createBid: async ({ request, locals }) => {
         // Ensure user is authenticated
-        const userId = await locals.session?.userId;
+        const user = await locals.user;
 
-        if (!userId) {
+        if (!user.id) {
             return fail(401, { message: 'Unauthorized' });
         }
 
@@ -70,7 +71,7 @@ export const actions = {
             await db.insert(bids).values({
                 id: crypto.randomUUID(),
                 itemId: auctionId,
-                userId,
+                userId: user.id,
                 amount: lastestBid,
             });
 
@@ -78,6 +79,15 @@ export const actions = {
             await db.update(books).set({
                 currentBid: lastestBid,
             }).where(eq(books.id, auctionId));
+
+            // publish bid to realtime
+            publishBid({
+                auctionId,
+                auctionName: book.name,
+                bidder: user.name,
+                amount: lastestBid,
+                timestamp: new Date().toISOString(),
+            });
 
             // return success
             return {

@@ -15,7 +15,9 @@ export const getImage = ({ filekey }: { filekey: string }) => {
 type BookRow = InferSelectModel<typeof books>;
 type BidRow = InferSelectModel<typeof bids>;
 type UserRow = InferSelectModel<typeof user>;
-export type BooksWithBids = BookRow & { bids: (BidRow & { user: Partial<UserRow> })[] } & { user: Partial<UserRow> };
+
+export type BidsWithUser = BidRow & { user: Partial<UserRow> };
+export type BooksWithBids = BookRow & { bids: BidsWithUser[] } & { user: Partial<UserRow> };
 
 export type Auction = Partial<Omit<BookRow, "endDate">> & {
     status: "active" | "ending-soon" | "ended";

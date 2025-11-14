@@ -30,80 +30,24 @@
     );
   });
 
-  // $effect(() => {
-  //   realtime.connect();
+  $effect(() => {
+    realtime.connect();
 
-  //   const unsubscribe = realtime.subscribe(auctionId!, (update) => {
-  //     if (auction && update.auctionId === auction.id) {
-  //       console.log("[v0] Received real-time bid update:", update);
+    const unsubscribe = realtime.subscribe(auction.id!, (update) => {
+      if (auction && update.auctionId === auction.id) {
+        console.log("[v0] Received real-time bid update:", update);
+        auction = {
+          ...auction,
+          currentBid: Math.max(auction.currentBid, update.amount),
+        };
+      }
+    });
 
-  //       const newBid: Bid = {
-  //         id: String(auction.bids.length + 1),
-  //         bidder: update.bidder,
-  //         amount: update.amount,
-  //         timestamp: "just now",
-  //       };
-
-  //       auction = {
-  //         ...auction,
-  //         bids: [newBid, ...auction.bids],
-  //         currentPrice: Math.max(auction.currentPrice, update.amount),
-  //         highestBid: Math.max(auction.highestBid, update.amount),
-  //       };
-  //     }
-  //   });
-
-  //   return () => {
-  //     unsubscribe();
-  //     realtime.disconnect();
-  //   };
-  // });
-
-  // $effect(() => {
-  //   auction = allAuctions[auctionId!] || null;
-  // });
-
-  function placeBid() {
-    // bidError = "";
-    // bidSuccess = false;
-    // if (!newBidAmount) {
-    //   bidError = "Please enter a bid amount";
-    //   return;
-    // }
-    // const bidAmount = parseFloat(newBidAmount);
-    // if (isNaN(bidAmount)) {
-    //   bidError = "Please enter a valid amount";
-    //   return;
-    // }
-    // const minBid = auction
-    //   ? Math.max(auction.currentBid + 50, auction.startingPrice)
-    //   : 0;
-    // if (bidAmount < minBid) {
-    //   bidError = `Bid must be at least $${minBid.toLocaleString()}`;
-    //   return;
-    // }
-    // if (auction) {
-    //   const newBid = {
-    //     // id: String(auction.bids.length + 1),
-    //     bidder: "CurrentUser",
-    //     amount: bidAmount,
-    //     timestamp: "just now",
-    //   };
-    //   auction = {
-    //     ...auction,
-    //     bids: [newBid, ...auction.bids],
-    //     currentBid: bidAmount,
-    //     // highestBid: bidAmount,
-    //   };
-    //   // Simulate broadcasting to other users
-    //   // realtime.broadcastBid(auction.id, "CurrentUser", bidAmount);
-    //   bidSuccess = true;
-    //   newBidAmount = "";
-    //   setTimeout(() => {
-    //     bidSuccess = false;
-    //   }, 3000);
-    // }
-  }
+    return () => {
+      unsubscribe();
+      realtime.disconnect();
+    };
+  });
 </script>
 
 <svelte:head>

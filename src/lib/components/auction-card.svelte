@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { FALLBACK_IMAGE } from "../../routes/dashboard/shared/constants";
   import type { Auction } from "../../routes/helpers";
   import { Badge } from "flowbite-svelte";
 
@@ -15,8 +16,7 @@
   <!-- Image -->
   <div class="relative mb-4 overflow-hidden rounded-md bg-muted h-48">
     <img
-      src={auction.image ||
-        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
+      src={auction.image || FALLBACK_IMAGE}
       alt={auction.name}
       class="w-full h-full object-cover hover:scale-105 transition-transform"
     />

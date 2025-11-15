@@ -5,8 +5,11 @@
   import type { LayoutData } from "./$types";
   import { authClient } from "$lib/auth-client";
   import { goto } from "$app/navigation";
+  import { FALLBACK_IMAGE } from "./dashboard/shared/constants";
+  import { Button, Modal, P } from "flowbite-svelte";
 
   let { children, data }: { children: Snippet; data: LayoutData } = $props();
+  let open = $state(false);
 </script>
 
 <svelte:head>
@@ -24,6 +27,32 @@
   </main>
   <!-- Footer -->
   {@render footer()}
+
+  <div>
+    <Modal title="Terms of Service" form bind:open>
+      <!-- write me the terms of service -->
+      <P>
+        By using Book Bidding you agree to bid honestly, pay for won items, and
+        follow all auction rules. We may suspend accounts for violations. <br />
+        We are not liable for listing errors or disputes between users. Use at your
+        own risk.
+      </P>
+
+      {#snippet footer()}
+        <Button class="cursor-pointer" type="submit" value="success">
+          I accept
+        </Button>
+        <Button
+          class="cursor-pointer"
+          type="submit"
+          value="decline"
+          color="alternative"
+        >
+          Decline
+        </Button>
+      {/snippet}
+    </Modal>
+  </div>
 </div>
 
 <!-- Navigation Snippet -->
@@ -49,18 +78,21 @@
             <a
               href="/dashboard"
               class="text-foreground hover:text-primary transition font-koulen"
-              >Dashboard</a
             >
+              Dashboard
+            </a>
             <a
               href="/my-bids"
               class="text-foreground hover:text-primary transition font-koulen"
-              >My Bids</a
             >
+              My Bids
+            </a>
             <a
               href="/my-sales"
               class="text-foreground hover:text-primary transition font-koulen"
-              >My Sales</a
             >
+              My Sales
+            </a>
           {/if}
         </div>
 
@@ -68,8 +100,7 @@
           {#if data.sessionId && data.user}
             <div class="flex items-center gap-3">
               <img
-                src={data.user.image ||
-                  "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
+                src={data.user.image || FALLBACK_IMAGE}
                 alt={data.user?.name || "Username"}
                 class="w-8 h-8 rounded-full border border-border"
               />
@@ -128,7 +159,7 @@
           <h3 class=" font-bold mb-4">Help</h3>
           <ul class="text-sm space-y-2 opacity-75">
             <li>
-              <a href="/" class="hover:opacity-100">How to Bid</a>
+              <a href="#how-it-works" class="hover:opacity-100">How to Bid</a>
             </li>
             <li>
               <a href="/" class="hover:opacity-100">Contact</a>
@@ -139,10 +170,20 @@
           <h3 class=" font-bold mb-4">Legal</h3>
           <ul class="text-sm space-y-2 opacity-75">
             <li>
-              <a href="/" class="hover:opacity-100">Terms</a>
+              <button
+                onclick={() => (open = true)}
+                class="hover:opacity-100 cursor-pointer"
+              >
+                Terms
+              </button>
             </li>
             <li>
-              <a href="/" class="hover:opacity-100">Privacy</a>
+              <button
+                onclick={() => (open = true)}
+                class="hover:opacity-100 cursor-pointer"
+              >
+                Privacy
+              </button>
             </li>
           </ul>
         </div>
@@ -151,7 +192,9 @@
     <div
       class="border-t mb-8 border-secondary-foreground/20 pt-8 text-center text-sm opacity-60"
     >
-      <p>&copy; 2025 Book Bidding. All rights reserved.</p>
+      <p>
+        &copy; {new Date().getFullYear()} Book Bidding. All rights reserved.
+      </p>
     </div>
   </footer>
 {/snippet}

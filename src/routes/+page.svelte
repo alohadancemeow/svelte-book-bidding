@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import type { PageProps } from "./$types";
+  import { FALLBACK_IMAGE } from "./dashboard/shared/constants";
 
   let { data }: PageProps = $props();
 
@@ -89,8 +90,7 @@
               <!-- Image -->
               <div class="relative h-64 overflow-hidden bg-muted">
                 <img
-                  src={book.fileKey ||
-                    "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"}
+                  src={book.fileKey || FALLBACK_IMAGE}
                   alt={book.name}
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -206,9 +206,9 @@
             class="absolute inset-0 bg-linear-to-br from-primary-foreground/10 to-transparent rounded-2xl"
           ></div>
           <img
-            src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687"
+            src={FALLBACK_IMAGE}
             alt="Rare book collection"
-            class="w-full h-full object-cover rounded-2xl shadow-2xl"
+            class="w-full h-full object-cover rounded-md shadow-2xl"
           />
         </div>
       </div>
@@ -268,7 +268,7 @@
 
 <!-- How It Works Section -->
 {#snippet howItWorks()}
-  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50">
+  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50" id="how-it-works">
     <div class="max-w-7xl mx-auto">
       <h2
         class="text-4xl md:text-5xl font-bold text-foreground text-center mb-16"

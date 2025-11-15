@@ -197,11 +197,11 @@
 
       <!-- Pagination -->
       {#if totalPages() > 1}
-        <div class="flex justify-center items-center gap-2 mt-12">
+        <div class="flex justify-center items-center gap-2 mt-12 font-koulen">
           <button
             disabled={currentPage === 1}
             onclick={() => currentPage--}
-            class="px-4 py-2 border border-border rounded-lg bg-card text-foreground hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            class="px-4 py-2 cursor-pointer border border-border rounded-lg bg-card text-foreground hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             ← Previous
           </button>
@@ -210,7 +210,7 @@
             {#each { length: totalPages() } as _, i}
               <button
                 onclick={() => (currentPage = i + 1)}
-                class={`px-3 py-2 rounded-lg transition ${
+                class={`px-3 py-2 rounded-lg transition cursor-pointer ${
                   currentPage === i + 1
                     ? "bg-primary text-primary-foreground"
                     : "bg-card border border-border text-foreground hover:bg-accent/10"
@@ -224,7 +224,7 @@
           <button
             disabled={currentPage === totalPages()}
             onclick={() => currentPage++}
-            class="px-4 py-2 border border-border rounded-lg bg-card text-foreground hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            class="px-4 py-2 cursor-pointer border border-border rounded-lg bg-card text-foreground hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             Next →
           </button>

@@ -6,6 +6,7 @@
   import { mapBooksToAuctions } from "../../helpers.js";
   import { enhance } from "$app/forms";
   import { Button, Spinner } from "flowbite-svelte";
+  import { FALLBACK_IMAGE } from "../../dashboard/shared/constants.js";
 
   let { data } = $props();
 
@@ -96,9 +97,9 @@
   <div class="lg:col-span-2">
     <div class="bg-card border border-border rounded-lg overflow-hidden mb-8">
       <img
-        src={auction.image || "/placeholder.svg"}
+        src={auction.image || FALLBACK_IMAGE}
         alt={auction.name}
-        class="w-full h-96 object-cover"
+        class="w-full h-96 lg:h-[430px] object-cover"
       />
     </div>
 

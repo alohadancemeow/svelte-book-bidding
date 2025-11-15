@@ -5,6 +5,7 @@ import { books } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 import { deleteFile, uploadFile } from '../../shared/helpers';
+import { getImage } from '../../../helpers';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const userId = locals.user?.id;
@@ -24,6 +25,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   if (!book || book.userId !== userId) {
     throw redirect(302, '/dashboard');
   }
+
+  // get image from db
+  book.fileKey = getImage({ filekey: book.fileKey });
 
   return { book };
 };
@@ -100,7 +104,7 @@ export const actions = {
           author,
           description,
           startingPrice,
-          currentBid: startingPrice, // keep consistent for now
+          currentBid: existing.currentBid, // keep consistent for now
           condition,
           pages,
           yearPublished,

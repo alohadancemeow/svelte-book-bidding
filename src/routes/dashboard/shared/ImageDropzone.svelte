@@ -36,6 +36,7 @@
   onDrop={handleOnDrop}
   multiple
   accept=".jpg,.png,.gif"
+  class="w-full h-48 p-4 flex-wrap"
 >
   <svg
     aria-hidden="true"

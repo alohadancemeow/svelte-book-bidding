@@ -58,6 +58,21 @@
     mode === "create" ? "?/createAuction" : "?/updateAuction"
   );
   let imageRequired: boolean = $state(mode === "create");
+  let previewUrl: string | null = $state(null);
+
+  $effect(() => {
+    if (filesInDropzone && filesInDropzone.length > 0) {
+      const url = URL.createObjectURL(filesInDropzone[0]);
+      previewUrl = url;
+
+      return () => {
+        URL.revokeObjectURL(url);
+        previewUrl = null;
+      };
+    } else {
+      previewUrl = null;
+    }
+  });
 
   // If initial data is provided (edit mode), prefill the form
   $effect(() => {
@@ -233,7 +248,7 @@
       class="w-full h-24 px-4 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
     ></textarea>
   </div>
-  <div class="flex gap-4 items-center justify-between w-full flex-wrap">
+  <div class="flex gap-4 items-center justify-between w-full flex-wrap mb-6">
     <div>
       <label
         for="condition"
@@ -305,13 +320,27 @@
     </div>
   </div>
 
-  <!-- Components inside FormField -->
   <!-- Image Dropzone -->
   <ImageDropzone
     bind:filesInDropzone
     required={imageRequired}
     {existingFileKey}
   />
+
+  <!-- show image preview -->
+  {#if filesInDropzone && filesInDropzone.length > 0}
+    <div class="w-full">
+      <img src={previewUrl} alt="Preview" class="w-full h-full object-cover" />
+    </div>
+  {:else if existingFileKey}
+    <div class="w-full">
+      <img
+        src={existingFileKey}
+        alt="Preview"
+        class="w-full h-full object-cover"
+      />
+    </div>
+  {/if}
 
   <!-- Set Auction End Time -->
   <div class="flex gap-4 items-center w-full">

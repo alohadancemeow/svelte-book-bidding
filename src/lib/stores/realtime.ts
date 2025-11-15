@@ -31,7 +31,7 @@ function createRealtimeStore() {
 
             // Set up event source for bid updates
             if (!eventSource) {
-                eventSource = new EventSource("/realtime/bids")
+                eventSource = new EventSource("/api/realtime/bids")
                 eventSource.onmessage = (e) => {
                     try {
                         const data = JSON.parse(e.data) as BidUpdate

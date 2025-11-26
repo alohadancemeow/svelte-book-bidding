@@ -1,7 +1,9 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { ClockOutline } from "flowbite-svelte-icons";
   import type { PageProps } from "./$types";
   import { FALLBACK_IMAGE } from "./dashboard/shared/constants";
+  import { Section, Schedule, ScheduleItem } from "flowbite-svelte-blocks";
 
   let { data }: PageProps = $props();
 
@@ -50,6 +52,22 @@
       .filter((book) => new Date(book.endDate) <= new Date())
       .reduce((acc, book) => acc + (book.currentBid || 0), 0),
   };
+
+  // ending within 3 days
+  const endingSoonBooks = data.books.filter((b) => {
+    const end = new Date(b.endDate).getTime();
+    const now = Date.now();
+    const diff = end - now;
+    return diff > 0 && diff <= 3 * 24 * 60 * 60 * 1000;
+  });
+
+  const formatEndingSoonDate = (date: Date) => {
+    return new Date(date).toLocaleString("en-GB", {
+      weekday: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 </script>
 
 <div class="bg-background">
@@ -65,12 +83,46 @@
   <!-- How It Works -->
   {@render howItWorks()}
 
+  <!-- Ending Soon (within 3 days) -->
+  {#if endingSoonBooks}
+    {@render endingSoon()}
+  {/if}
+
   <!-- CTA Section -->
   {@render cta()}
 </div>
 
+{#snippet endingSoon()}
+  <Section
+    name="schedule"
+    sectionClass="bg-white dark:bg-gray-900 antialiased px-4 md:px-8 py-8"
+  >
+    <Schedule scheduleName="Ending Soon">
+      {#snippet subtitle()}
+        <div class="mt-4">
+          <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Bid now to reserve the book you are interested in!
+          </p>
+        </div>
+      {/snippet}
+      {#each endingSoonBooks as item}
+        <div class="flex gap-2 items-center">
+          <ClockOutline class="shrink-0 h-6 w-6" />
+          <ScheduleItem
+            item={{
+              title: item.name,
+              href: `/auctions/${item.id}`,
+              time: formatEndingSoonDate(item.endDate),
+            }}
+          />
+        </div>
+      {/each}
+    </Schedule>
+  </Section>
+{/snippet}
+
 {#snippet featuredItems()}
-  <section class="py-20 px-4 sm:px-6 lg:px-8">
+  <section class="py-20 px-4 sm:px-6 lg:px-8 border-b border-border">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
         <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-4">

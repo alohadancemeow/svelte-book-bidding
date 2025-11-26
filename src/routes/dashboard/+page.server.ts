@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
     // get user from locals
     if (!locals.user?.id) {
-        redirect(302, '/login');
+        redirect(302, '/auth/login');
     }
 
     // get user's books

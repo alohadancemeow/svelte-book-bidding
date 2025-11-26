@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import HeaderSection from "$lib/components/Header.svelte";
   import FormField from "../../shared/FormField.svelte";
-  import Unauthentication from "../../shared/Unauthentication.svelte";
+  import Unauthentication from "$lib/components/Unauthentication.svelte";
 
   let { data } = $props();
 
@@ -21,7 +21,7 @@
     <HeaderSection
       title="Edit Auction"
       description="Update auction details and image or end date"
-      withButton
+      cta={{ text: "Back to Dashboard", href: "/dashboard" }}
     />
 
     <!-- Main Content -->

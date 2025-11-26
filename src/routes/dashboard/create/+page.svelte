@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import HeaderSection from "$lib/components/Header.svelte";
   import FormField from "../shared/FormField.svelte";
-  import Unauthentication from "../shared/Unauthentication.svelte";
+  import Unauthentication from "$lib/components/Unauthentication.svelte";
 </script>
 
 <svelte:head>
@@ -17,7 +17,7 @@
     <HeaderSection
       title="Create New Auction"
       description="Create a new auction to start a bid on a book."
-      withButton
+      cta={{ text: "Back to Dashboard", href: "/dashboard" }}
     />
 
     <!-- Main Content -->

@@ -3,6 +3,8 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import { Modal } from "flowbite-svelte";
+  import HeaderSection from "$lib/components/Header.svelte";
+  import Unauthentication from "$lib/components/Unauthentication.svelte";
   import type { PageProps } from "./$types";
 
   let { data }: PageProps = $props();
@@ -81,46 +83,17 @@
 </svelte:head>
 
 {#if !page.data.sessionId}
-  <div class="min-h-screen flex items-center justify-center bg-background">
-    <div class="text-center">
-      <h1 class="text-2xl font-bold text-foreground mb-4">
-        Admin Access Required
-      </h1>
-      <p class="text-muted-foreground mb-6">
-        Please sign in to access the admin dashboard.
-      </p>
-      <a
-        href="/auth/login"
-        class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-      >
-        Sign In
-      </a>
-    </div>
-  </div>
+  <Unauthentication />
 {:else}
   <div class="bg-background">
-    <!-- Header -->
-    <div
-      class="bg-linear-to-r from-primary/10 to-accent/10 border-b border-border py-8"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center">
-          <div>
-            <h1 class="text-4xl font-bold text-foreground">Admin Dashboard</h1>
-            <p class="text-muted-foreground mt-2">
-              Manage your auctions and monitor activity
-            </p>
-          </div>
-          <button
-            onclick={() =>
-              goto(`/dashboard/${page.data?.sessionId ? "create" : ""}`)}
-            class="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
-          >
-            {page.data?.sessionId ? "Create Auction" : "Create Account"}
-          </button>
-        </div>
-      </div>
-    </div>
+    <HeaderSection
+      title="Admin Dashboard"
+      description="Manage your auctions and monitor activity"
+      cta={{
+        text: "Create Auction",
+        href: `/dashboard/${page.data?.sessionId ? "create" : ""}`,
+      }}
+    />
 
     <!-- Main Content -->
     <div

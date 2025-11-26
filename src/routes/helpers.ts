@@ -58,3 +58,17 @@ export const mapBooksToAuctions = (books: BooksWithBids[]) => {
         };
     });
 }
+
+export const formatDate = (ms?: number | Date) => {
+    if (!ms) return "";
+
+    const d = typeof ms === "number" ? new Date(ms) : ms;
+    return d.toLocaleString("en-GB", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}

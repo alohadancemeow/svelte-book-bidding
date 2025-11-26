@@ -1,21 +1,9 @@
 <script lang="ts">
   import { FALLBACK_IMAGE } from "../../dashboard/shared/constants";
+  import { formatDate } from "../../helpers";
+  import HeaderSection from "$lib/components/Header.svelte";
 
   let { data } = $props();
-
-  function formatDate(ms?: number | Date) {
-    if (!ms) return "";
-
-    const d = typeof ms === "number" ? new Date(ms) : ms;
-    return d.toLocaleString("en-GB", {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 
   function isEnded(endDate?: number | Date) {
     if (!endDate) return false;
@@ -29,26 +17,11 @@
 </svelte:head>
 
 <div class="bg-background min-h-screen">
-  <div
-    class="bg-linear-to-r from-primary/10 to-accent/10 border-b border-border py-8"
-  >
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center">
-        <div>
-          <h1 class="text-4xl font-bold text-foreground">My Bids</h1>
-          <p class="text-muted-foreground mt-2">
-            Your bidding activity across auctions
-          </p>
-        </div>
-        <a
-          href="/auctions"
-          class="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
-        >
-          View Auctions
-        </a>
-      </div>
-    </div>
-  </div>
+  <HeaderSection
+    title="My Bids"
+    description="Your bidding activity across auctions"
+    cta={{ text: "View Auctions", href: "/auctions" }}
+  />
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     {#if data.bids && data.bids.length > 0}

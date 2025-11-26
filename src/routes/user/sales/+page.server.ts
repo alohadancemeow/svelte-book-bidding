@@ -1,11 +1,13 @@
 import { db } from "$lib/server/db";
+import { redirect } from "@sveltejs/kit";
 import { getImage } from "../../helpers";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals }) => {
     const user = await locals.user;
     if (!user?.id) {
-        return { books: [], stats: {} };
+        redirect(302, '/auth/login')
+        // return { books: [], stats: {} };
     }
 
     const myAuctions = await db.query.books.findMany({
@@ -43,7 +45,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
         const itemId = item.id as string | number | undefined;
         if (itemId == null || seen.has(itemId)) continue;
-        
+
         const isEnded = new Date(item.endDate).getTime() <= now;
         const isWinner = (bid.amount || 0) === (item.currentBid || 0);
         if (isEnded && isWinner) {

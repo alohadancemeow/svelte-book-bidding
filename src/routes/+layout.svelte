@@ -82,13 +82,13 @@
               Dashboard
             </a>
             <a
-              href="/my-bids"
+              href="/user/bids"
               class="text-foreground hover:text-primary transition font-koulen"
             >
               My Bids
             </a>
             <a
-              href="/my-sales"
+              href="/user/sales"
               class="text-foreground hover:text-primary transition font-koulen"
             >
               My Sales

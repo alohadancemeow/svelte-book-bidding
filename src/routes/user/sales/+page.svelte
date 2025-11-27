@@ -4,9 +4,6 @@
   import type { PageProps } from "./$types";
   import HeaderSection from "$lib/components/Header.svelte";
 
-  import { PUBLIC_STRIPE_KEY } from "$env/static/public";
-  import { loadStripe } from "@stripe/stripe-js";
-
   let { data }: PageProps = $props();
 
   function formatCurrency(n?: number) {
@@ -15,8 +12,6 @@
 
   // Handle checkout
   const onCheckout = async (book: BookRow) => {
-    const stripe = await loadStripe(PUBLIC_STRIPE_KEY);
-
     const response = await fetch("/api/checkout", {
       method: "POST",
       headers: {
@@ -36,8 +31,7 @@
     });
 
     const { sessionId, url } = await response.json();
-    console.log(sessionId, "sessionId");
-    // await stripe?.redirectToCheckout({ sessionId });
+    // console.log(sessionId, "sessionId");
     window.location = url;
   };
 </script>

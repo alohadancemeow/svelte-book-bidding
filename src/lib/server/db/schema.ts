@@ -90,6 +90,21 @@ export const bids = sqliteTable("bids", {
 	...timestampDefaults,
 });
 
+export const payments = sqliteTable("payments", {
+	id: text("id").primaryKey(),
+	userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+	itemId: text("item_id").notNull().references(() => books.id, { onDelete: "cascade" }),
+	stripeSessionId: text("stripe_session_id").notNull(),
+	paymentIntentId: text("payment_intent_id"),
+	invoiceId: text("invoice_id"),
+	amount: integer("amount").notNull(),
+	currency: text("currency").notNull(),
+	status: text("status").notNull(),
+	receiptUrl: text("receipt_url"),
+	hostedInvoiceUrl: text("hosted_invoice_url"),
+	...timestampDefaults,
+});
+
 // RELATIONS
 export const bidRelations = relations(bids, ({ one }) => ({
 	item: one(books, {
@@ -113,4 +128,15 @@ export const bookRelations = relations(books, ({ one, many }) => ({
 export const userRelations = relations(user, ({ many }) => ({
 	books: many(books),
 	bids: many(bids),
+}));
+
+export const paymentRelations = relations(payments, ({ one }) => ({
+	user: one(user, {
+		fields: [payments.userId],
+		references: [user.id],
+	}),
+	item: one(books, {
+		fields: [payments.itemId],
+		references: [books.id],
+	}),
 }));

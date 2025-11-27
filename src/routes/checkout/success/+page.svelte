@@ -1,0 +1,16 @@
+<svelte:head>
+  <title>Payment Successful</title>
+</svelte:head>
+
+<div class="min-h-screen bg-background flex items-center justify-center px-4">
+  <div class="bg-card border border-border rounded-lg p-8 text-center max-w-md w-full">
+    <h1 class="text-2xl font-koulen mb-2 text-foreground">Payment Successful</h1>
+    <p class="text-muted-foreground mb-6">
+      Thank you! Your payment has been processed.
+    </p>
+    <div class="flex gap-3 justify-center">
+      <a href="/user/sales" class="px-4 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg">View Sales</a>
+      <a href="/" class="px-4 py-2 cursor-pointer bg-card border border-border text-foreground rounded-lg">Home</a>
+    </div>
+  </div>
+</div>

@@ -1,14 +1,45 @@
 <script lang="ts">
   import { FALLBACK_IMAGE } from "../../dashboard/shared/constants";
-  import { formatDate } from "../../helpers";
+  import { formatDate, type BookRow } from "../../helpers";
   import type { PageProps } from "./$types";
   import HeaderSection from "$lib/components/Header.svelte";
+
+  import { PUBLIC_STRIPE_KEY } from "$env/static/public";
+  import { loadStripe } from "@stripe/stripe-js";
 
   let { data }: PageProps = $props();
 
   function formatCurrency(n?: number) {
     return `$${(n || 0).toLocaleString()}`;
   }
+
+  // Handle checkout
+  const onCheckout = async (book: BookRow) => {
+    const stripe = await loadStripe(PUBLIC_STRIPE_KEY);
+
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: book.currentBid,
+        currency: "usd",
+        name: book.name,
+        mode: "payment",
+        metadata: {
+          auctionId: book.id,
+          userId: book.userId,
+          image: book.fileKey || FALLBACK_IMAGE,
+        },
+      }),
+    });
+
+    const { sessionId, url } = await response.json();
+    console.log(sessionId, "sessionId");
+    // await stripe?.redirectToCheckout({ sessionId });
+    window.location = url;
+  };
 </script>
 
 <svelte:head>
@@ -123,23 +154,25 @@
               </div>
               <div class="mt-2 text-sm text-muted-foreground">
                 Ended: {formatDate(book.endDate)} · Your final:
-                <span class="font-semibold text-foreground"
-                  >{formatCurrency(book.currentBid)}</span
-                >
+                <span class="font-semibold text-foreground">
+                  {formatCurrency(book.currentBid)}
+                </span>
               </div>
               <div class="mt-1 flex gap-2 items-center">
                 <span
                   class="inline-block bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-0.5 rounded text-xs"
-                  >Won</span
                 >
+                  Won
+                </span>
               </div>
             </div>
-            <a
-              href={`/auctions/${book.id}`}
+            <!-- href={`/auctions/${book.id}`} -->
+            <button
+              onclick={() => onCheckout(book)}
               class="px-4 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
             >
               Checkout
-            </a>
+            </button>
           </div>
         {/each}
       </div>

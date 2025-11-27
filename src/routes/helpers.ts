@@ -12,7 +12,7 @@ export const getImage = ({ filekey }: { filekey: string }) => {
 };
 
 
-type BookRow = InferSelectModel<typeof books>;
+export type BookRow = InferSelectModel<typeof books>;
 type BidRow = InferSelectModel<typeof bids>;
 type UserRow = InferSelectModel<typeof user>;
 

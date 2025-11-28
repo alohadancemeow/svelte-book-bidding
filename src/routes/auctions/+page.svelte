@@ -112,12 +112,14 @@
       <div class="mb-6">
         <label
           class="block text-sm font-medium text-foreground mb-2"
-          for="search">Search</label
+          for="search"
         >
+          Search
+        </label>
         <input
           type="text"
           id="search"
-          placeholder="Search by title or author"
+          placeholder="Search auctions"
           bind:value={searchQuery}
           class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
         />
@@ -127,8 +129,10 @@
       <div class="mb-6">
         <label
           class="block text-sm font-medium text-foreground mb-3"
-          for="status">Status</label
+          for="status"
         >
+          Status
+        </label>
         <div class="space-y-2">
           {#each ["all", "active", "ending-soon", "ended"] as status}
             <label class="flex items-center gap-2 cursor-pointer">
@@ -155,8 +159,10 @@
       <div>
         <label
           class="block text-sm font-medium text-foreground mb-2"
-          for="sortBy">Sort By</label
+          for="sortBy"
         >
+          Sort By
+        </label>
         <select
           id="sortBy"
           bind:value={sortBy}

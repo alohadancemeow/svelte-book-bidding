@@ -14,6 +14,7 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
+  <title>Book Bidding</title>
 </svelte:head>
 
 <div
@@ -104,16 +105,18 @@
                 alt={data.user?.name || "Username"}
                 class="w-8 h-8 rounded-full border border-border"
               />
-              <span class="text-sm font-medium text-foreground hidden sm:inline"
-                >{data.user?.name || "Username"}</span
+              <span
+                class="text-sm font-medium text-foreground hidden sm:inline"
               >
+                {data.user?.name || "Username"}
+              </span>
             </div>
             <button
               onclick={async () => {
                 await authClient.signOut();
                 goto("/auth/login", { invalidateAll: true });
               }}
-              class="px-4 font-koulen cursor-pointer py-2 text-foreground hover:bg-muted rounded-lg transition"
+              class="px-4 font-koulen cursor-pointer py-2 text-foreground hover:bg-red-900/30 rounded-lg transition"
             >
               Sign Out
             </button>
@@ -172,7 +175,7 @@
             <li>
               <button
                 onclick={() => (open = true)}
-                class="hover:opacity-100 cursor-pointer"
+                class="hover:opacity-100 cursor-pointer font-sans"
               >
                 Terms
               </button>
@@ -180,7 +183,7 @@
             <li>
               <button
                 onclick={() => (open = true)}
-                class="hover:opacity-100 cursor-pointer"
+                class="hover:opacity-100 cursor-pointer font-sans"
               >
                 Privacy
               </button>

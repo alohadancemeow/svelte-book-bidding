@@ -142,7 +142,8 @@
   }
   h1,
   h2,
-  h3 {
+  h3,
+  button {
     @apply font-koulen leading-relaxed tracking-wide;
   }
 

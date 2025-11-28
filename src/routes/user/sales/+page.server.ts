@@ -55,11 +55,26 @@ export const load: PageServerLoad = async ({ locals }) => {
         }
     }
 
+    const myPayments = await db.query.payments.findMany({
+        where: (p, { eq }) => eq(p.userId, user.id),
+    });
+
+    const expenses = myPayments
+        .filter((p) => ["paid", "succeeded", "completed"].includes(p.status))
+        .reduce((a, c) => a + (c.amount || 0), 0);
+
+    const sellerPayments = await db.query.payments.findMany({
+        with: { item: true },
+    });
+
+    const salesRevenue = sellerPayments
+        .filter((p) => p.item?.userId === user.id && ["paid", "succeeded", "completed"].includes(p.status))
+        .reduce((a, c) => a + (c.amount || 0), 0);
+
     const stats = {
-        endedCount: endedAuctions.length,
-        pendingPaymentCount: awaitingPayment.length,
         pendingPaymentValue,
-        wonCount: myWonItems.length,
+        expenses,
+        salesRevenue,
     };
 
     return { books: endedAuctions, awaitingPayment, myWonItems, stats };

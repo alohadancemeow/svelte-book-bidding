@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { ClockOutline } from "flowbite-svelte-icons";
+  import { ChevronDoubleUpOutline, ClockOutline } from "flowbite-svelte-icons";
   import type { PageProps } from "./$types";
   import { FALLBACK_IMAGE } from "./dashboard/shared/constants";
   import { Section, Schedule, ScheduleItem } from "flowbite-svelte-blocks";
@@ -107,7 +107,8 @@
       {/snippet}
       {#each endingSoonBooks as item}
         <div class="flex gap-2 items-center">
-          <ClockOutline class="shrink-0 h-6 w-6" />
+          <!-- <ClockOutline class="shrink-0 h-6 w-6" /> -->
+          <p class="text-lg">⏰</p>
           <ScheduleItem
             item={{
               title: item.name,
@@ -137,7 +138,7 @@
         {#each data.books as book (book.id)}
           <a href={`/auctions/${book.id}`} class="group">
             <div
-              class="bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-xl"
+              class="bg-card rounded-md overflow-hidden border border-border transition-all duration-300 hover:shadow-xl"
             >
               <!-- Image -->
               <div class="relative h-64 overflow-hidden bg-muted">
@@ -175,6 +176,11 @@
                   <div class="flex flex-col gap-1.5">
                     <p class="text-xs text-muted-foreground">Current Bid</p>
                     <div class="flex gap-1.5 items-baseline">
+                      {#if book.startingPrice < book.currentBid}
+                        <ChevronDoubleUpOutline
+                          class="shrink-0 text-emerald-500 self-baseline"
+                        />
+                      {/if}
                       <p class="text-2xl tracking-wider font-koulen">
                         ${book.currentBid.toLocaleString()}
                       </p>

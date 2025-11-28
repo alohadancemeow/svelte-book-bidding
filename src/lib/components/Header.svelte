@@ -18,7 +18,7 @@
 </script>
 
 <div
-  class="bg-linear-to-r from-primary/10 to-accent/10 border-b border-border py-8"
+  class="bg-linear-to-r from-primary/10 to-accent/10 border-b border-border py-10"
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center">

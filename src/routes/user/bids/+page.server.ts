@@ -33,5 +33,12 @@ export const load: PageServerLoad = async ({ locals }) => {
         uniqueBids.push(b);
     }
 
-    return { bids: uniqueBids };
+    // seperate uniqueBids into two arrays:
+    // 1. bids that are still active
+    // 2. bids that are ended
+
+    const activeBids = uniqueBids.filter(b => b.item?.endDate > new Date());
+    const endedBids = uniqueBids.filter(b => b.item?.endDate <= new Date());
+
+    return { activeBids, endedBids };
 };

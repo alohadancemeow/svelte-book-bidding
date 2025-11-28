@@ -6,12 +6,12 @@
 
   let email = $state("");
   let password = $state("");
-  let username = $state("");
   let loading = $state(false);
+  let providerLoading: null | "google" | "github" = $state(null);
   let error = $state("");
   let success = $state("");
 
-  async function handleSubmit(e: SubmitEvent) {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     error = "";
     success = "";
@@ -39,110 +39,149 @@
             },
           }
         );
-      } else {
-        if (!email || !password || !username) {
-          error = "Please fill in all fields";
-          return;
-        }
-
-        if (username.length < 3) {
-          error = "Username must be at least 3 characters";
-          return;
-        }
-
-        await authClient.signUp.email(
-          {
-            email,
-            password,
-            name: username,
-          },
-          {
-            onSuccess: () => {
-              success = "Signup successful! Redirecting...";
-              goto("/", { invalidateAll: true });
-            },
-            onError: (err) => {
-              error = err.error.message || "Signup failed";
-            },
-          }
-        );
       }
+    } catch (e) {
+      error = "Login failed, Please check your email and password";
     } finally {
       loading = false;
     }
-  }
+  };
+
+  // Sign in with social providers (Google, GitHub)
+  const signInWithProvider = async (provider: "google" | "github") => {
+    error = "";
+    loading = true;
+    providerLoading = provider;
+
+    try {
+      await authClient.signIn.social({ provider, callbackURL: "/" });
+    } catch (e) {
+      error = "Sign in failed, Please try again";
+    } finally {
+      loading = false;
+      providerLoading = null;
+    }
+  };
 </script>
 
-<form onsubmit={handleSubmit} class="space-y-4">
+<form onsubmit={mode === "login" ? handleSubmit : undefined} class="space-y-4">
   {#if mode === "signup"}
-    <div>
-      <label
-        for="username"
-        class="block text-sm font-medium text-foreground mb-1"
+    <div class="space-y-3">
+      <button
+        type="button"
+        disabled={loading}
+        onclick={() => signInWithProvider("google")}
+        class="w-full flex items-center justify-center cursor-pointer bg-card border border-border text-foreground py-2 rounded-lg font-medium hover:bg-muted/50 disabled:opacity-50 transition"
       >
-        Username
+        <span class="inline-flex items-center justify-center w-5 h-5 me-2">
+          <svg viewBox="0 0 48 48" class="w-5 h-5" aria-hidden="true">
+            <path
+              fill="#FFC107"
+              d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.9 0-12.5-5.6-12.5-12.5S17.1 11 24 11c3.2 0 6.1 1.2 8.3 3.3l5.7-5.7C34.9 5.1 29.7 3 24 3 12.3 3 3 12.3 3 24s9.3 21 21 21 21-9.3 21-21c0-1.2-.1-2.4-.4-3.5z"
+            />
+            <path
+              fill="#FF3D00"
+              d="M6.3 14.7l6.6 4.8C14.9 16.8 19.1 14 24 14c3.2 0 6.1 1.2 8.3 3.3l5.7-5.7C34.9 5.1 29.7 3 24 3 15.5 3 8.3 7.7 4.6 14.7z"
+            />
+            <path
+              fill="#4CAF50"
+              d="M24 45c5.7 0 10.9-2.1 14.9-5.6l-6.9-5.6C30 35.6 27.2 36.5 24 36.5c-5.3 0-9.8-3.4-11.4-8.1l-6.7 5.2C8.9 40.8 15.9 45 24 45z"
+            />
+            <path
+              fill="#1976D2"
+              d="M43.6 20.5h-1.9V20H24v8h11.3c-1.1 3.1-3.4 5.7-6.2 7.2l6.9 5.6C39 38.9 42 32.8 42 26c0-1.9-.3-3.8-.8-5.5z"
+            />
+          </svg>
+        </span>
+        {loading && providerLoading === "google"
+          ? "Loading..."
+          : "Continue with Google"}
+      </button>
+      <button
+        type="button"
+        disabled={loading}
+        onclick={() => signInWithProvider("github")}
+        class="w-full flex items-center justify-center cursor-pointer bg-card border border-border text-foreground py-2 rounded-lg font-medium hover:bg-muted/50 disabled:opacity-50 transition"
+      >
+        <span class="inline-flex items-center justify-center w-5 h-5 me-2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.04-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.38-1.34-1.75-1.34-1.75-1.09-.75.08-.74.08-.74 1.2.08 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.98 0-1.32.47-2.4 1.24-3.25-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.24.96-.27 2-.4 3.03-.41 1.03.01 2.07.14 3.03.41 2.29-1.56 3.29-1.24 3.29-1.24.66 1.66.25 2.88.12 3.18.77.85 1.24 1.93 1.24 3.25 0 4.65-2.8 5.68-5.48 5.98.43.37.81 1.1.81 2.22 0 1.6-.01 2.88-.01 3.27 0 .32.21.7.82.58C20.57 21.8 24 17.31 24 12 24 5.37 18.63 0 12 0z"
+            />
+          </svg>
+        </span>
+        {loading && providerLoading === "github"
+          ? "Loading..."
+          : "Continue with GitHub"}
+      </button>
+    </div>
+
+    {#if error}
+      <div
+        class="p-3 bg-destructive/10 border border-destructive/30 rounded-lg"
+      >
+        <p class="text-sm text-destructive">{error}</p>
+      </div>
+    {/if}
+  {:else}
+    <div>
+      <label for="email" class="block text-sm font-medium text-foreground mb-1">
+        Email
       </label>
       <input
         required
-        type="text"
-        id="username"
-        bind:value={username}
-        placeholder="Enter a username"
+        type="email"
+        id="email"
+        bind:value={email}
+        placeholder="your@email.com"
         class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
       />
     </div>
-  {/if}
 
-  <div>
-    <label for="email" class="block text-sm font-medium text-foreground mb-1">
-      Email
-    </label>
-    <input
-      required
-      type="email"
-      id="email"
-      bind:value={email}
-      placeholder="your@email.com"
-      class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-    />
-  </div>
-
-  <div>
-    <label
-      for="password"
-      class="block text-sm font-medium text-foreground mb-1"
-    >
-      Password
-    </label>
-    <input
-      required
-      type="password"
-      id="password"
-      bind:value={password}
-      placeholder="Enter your password"
-      class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-    />
-  </div>
-
-  {#if error}
-    <div class="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
-      <p class="text-sm text-destructive">{error}</p>
+    <div>
+      <label
+        for="password"
+        class="block text-sm font-medium text-foreground mb-1"
+      >
+        Password
+      </label>
+      <input
+        required
+        type="password"
+        id="password"
+        bind:value={password}
+        placeholder="Enter your password"
+        class="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+      />
     </div>
-  {/if}
 
-  {#if success}
-    <div
-      class="p-3 bg-green-100 border border-green-300 rounded-lg dark:bg-green-900 dark:border-green-700"
+    {#if error}
+      <div
+        class="p-3 bg-destructive/10 border border-destructive/30 rounded-lg"
+      >
+        <p class="text-sm text-destructive">{error}</p>
+      </div>
+    {/if}
+
+    {#if success}
+      <div
+        class="p-3 bg-green-100 border border-green-300 rounded-lg dark:bg-green-900 dark:border-green-700"
+      >
+        <p class="text-sm text-green-800 dark:text-green-200">{success}</p>
+      </div>
+    {/if}
+
+    <button
+      type="submit"
+      disabled={loading}
+      class="w-full cursor-pointer bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
     >
-      <p class="text-sm text-green-800 dark:text-green-200">{success}</p>
-    </div>
+      {loading ? "Loading..." : "Sign In"}
+    </button>
   {/if}
-
-  <button
-    type="submit"
-    disabled={loading}
-    class="w-full cursor-pointer bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
-  >
-    {loading ? "Loading..." : mode === "login" ? "Sign In" : "Create Account"}
-  </button>
 </form>

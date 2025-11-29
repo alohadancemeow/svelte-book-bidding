@@ -22,7 +22,8 @@
   };
 
   interface Stat {
-    activeAuctions: number;
+    // activeAuctions: number;
+    transactions: number;
     rareBooks: number;
     happyCollectors: number;
     totalSales: number;
@@ -30,27 +31,30 @@
 
   // create stats from data
   const stats: Stat = {
-    activeAuctions: data.books.filter(
-      (book) => new Date(book.endDate) > new Date()
-    ).length,
+    // activeAuctions: data.books.filter(
+    //   (book) => new Date(book.endDate) > new Date()
+    // ).length,
+    transactions: data.transactionCount,
     rareBooks: data.books.length,
-    happyCollectors: (() => {
-      const now = new Date();
-      const winners = new Set<string>();
+    happyCollectors: data.userCount,
+    // happyCollectors: (() => {
+    //   const now = new Date();
+    //   const winners = new Set<string>();
 
-      data.books.forEach((book) => {
-        if (new Date(book.endDate) <= now && book.bids && book.bids.length) {
-          const winner = book.bids.reduce((max, bid) =>
-            bid.amount > max.amount ? bid : max
-          );
-          winners.add(winner.userId);
-        }
-      });
-      return winners.size;
-    })(),
-    totalSales: data.books
-      .filter((book) => new Date(book.endDate) <= new Date())
-      .reduce((acc, book) => acc + (book.currentBid || 0), 0),
+    //   data.books.forEach((book) => {
+    //     if (new Date(book.endDate) <= now && book.bids && book.bids.length) {
+    //       const winner = book.bids.reduce((max, bid) =>
+    //         bid.amount > max.amount ? bid : max
+    //       );
+    //       winners.add(winner.userId);
+    //     }
+    //   });
+    //   return winners.size;
+    // })(),
+    totalSales: data.books.reduce(
+      (acc, book) => acc + (book.currentBid || 0),
+      0
+    ),
   };
 
   // ending within 3 days
@@ -69,6 +73,10 @@
     });
   };
 </script>
+
+<svelte:head>
+  <title>Book Bidding</title>
+</svelte:head>
 
 <div class="bg-background">
   <!-- Hero Section -->
@@ -283,20 +291,20 @@
           <div
             class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
           >
-            {stats.activeAuctions}
+            {stats.rareBooks}
           </div>
           <div class="text-sm md:text-base text-muted-foreground">
-            Active Auctions
+            Rare Books
           </div>
         </div>
         <div class="text-center">
           <div
             class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
           >
-            {stats.rareBooks}
+            {stats.transactions}
           </div>
           <div class="text-sm md:text-base text-muted-foreground">
-            Rare Books
+            Transactions
           </div>
         </div>
         <div class="text-center">
@@ -316,7 +324,7 @@
             {`$${stats.totalSales}`}
           </div>
           <div class="text-sm md:text-base text-muted-foreground">
-            Total Sales
+            Total Values
           </div>
         </div>
       </div>

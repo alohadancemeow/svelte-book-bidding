@@ -10,8 +10,10 @@ export const load: PageServerLoad = async ({ locals }) => {
         // return { books: [], stats: {} };
     }
 
+    // get ended auctions
+    const now = Date.now();
     const myAuctions = await db.query.books.findMany({
-        where: (b, { eq: eql }) => eql(b.userId, user.id),
+        where: (b, { sql }) => sql`${b.userId} = ${user.id} AND (${b.endDate} < ${new Date(now)} OR ${b.endDate} = ${new Date()})`,
         with: {
             bids: {
                 with: { user: true },
@@ -25,57 +27,76 @@ export const load: PageServerLoad = async ({ locals }) => {
         b.fileKey = getImage({ filekey: b.fileKey });
     });
 
-    const now = Date.now();
-    const endedAuctions = myAuctions.filter((b) => new Date(b.endDate).getTime() <= now);
-    const awaitingPayment = endedAuctions.filter((b) => (b.currentBid || 0) > 0);
-    const pendingPaymentValue = awaitingPayment.reduce((a, c) => a + (c.currentBid || 0), 0);
+    let awaitingPayment: typeof myAuctions = [];
+    let pendingPaymentValue = 0;
 
-    const myBids = await db.query.bids.findMany({
-        where: (b, { eq: eql }) => eql(b.userId, user.id),
-        with: { item: true },
-        orderBy: (b, { desc }) => [desc(b.createdAt)],
-    });
-
-    const seen = new Set<string | number>();
-    const myWonItems: (typeof myBids[number]['item'])[] = [];
-
-    for (const bid of myBids) {
-        const item = bid.item;
-        if (!item) continue;
-
-        const itemId = item.id as string | number | undefined;
-        if (itemId == null || seen.has(itemId)) continue;
-
-        const isEnded = new Date(item.endDate).getTime() <= now;
-        const isWinner = (bid.amount || 0) === (item.currentBid || 0);
-        if (isEnded && isWinner) {
-            if (item.fileKey) item.fileKey = getImage({ filekey: item.fileKey });
-            myWonItems.push(item);
-            seen.add(itemId);
-        }
-    }
-
+    // get stats: expenses, salesRevenue
     const myPayments = await db.query.payments.findMany({
         where: (p, { eq }) => eq(p.userId, user.id),
+        with: { item: true },
     });
 
     const expenses = myPayments
-        .filter((p) => ["paid", "succeeded", "completed"].includes(p.status))
-        .reduce((a, c) => a + (c.amount || 0), 0);
+        .filter((p) => p.status === "paid")
+        .reduce((a, c) => a + ((c.amount / 100) || 0), 0); // convert to major currency
 
     const sellerPayments = await db.query.payments.findMany({
         with: { item: true },
     });
 
     const salesRevenue = sellerPayments
-        .filter((p) => p.item?.userId === user.id && ["paid", "succeeded", "completed"].includes(p.status))
-        .reduce((a, c) => a + (c.amount || 0), 0);
+        .filter((p) => p.item?.userId === user.id && p.status === "paid")
+        .reduce((a, c) => a + ((c.amount / 100) || 0), 0); // convert to major currency
 
+    const paidItemIds = new Set(
+        sellerPayments
+            .filter((p) => p.item?.userId === user.id && p.status === "paid")
+            .map((p) => String(p.itemId))
+    );
+
+    awaitingPayment = myAuctions.filter((b) => (b.currentBid || 0) > 0 && !paidItemIds.has(String(b.id)));
+    pendingPaymentValue = awaitingPayment.reduce((a, c) => a + (c.currentBid || 0), 0);
+
+    // get purchased items
+    const purchasedItems = (() => {
+        const seenIds = new Set<string | number>();
+        const items = myPayments
+            .filter((p) => p.status === "paid" && p.userId === user.id)
+            .map((p) => p.item!)
+            .filter((item) => {
+                const id = item.id as string | number | undefined;
+                if (id == null || seenIds.has(id)) return false;
+
+                seenIds.add(id);
+                return true;
+            });
+
+        items.forEach((i) => { if (i.fileKey) i.fileKey = getImage({ filekey: i.fileKey }); });
+        return items;
+    })();
+
+    // get sold items
+    const soldItems = (() => {
+        const seenIds = new Set<string | number>();
+        const items = sellerPayments
+            .filter((p) => p.item?.userId === user.id && p.status === "paid" && p.item)
+            .map((p) => p.item!)
+            .filter((item) => {
+                const id = item.id as string | number | undefined;
+                if (id == null || seenIds.has(id)) return false;
+                seenIds.add(id);
+                return true;
+            });
+        items.forEach((i) => { if (i.fileKey) i.fileKey = getImage({ filekey: i.fileKey }); });
+        return items;
+    })();
+
+    // create stats: pendingPaymentValue, expenses, salesRevenue
     const stats = {
         pendingPaymentValue,
         expenses,
         salesRevenue,
     };
 
-    return { books: endedAuctions, awaitingPayment, myWonItems, stats };
+    return { books: myAuctions, awaitingPayment, purchasedItems, soldItems, stats };
 };

@@ -5,6 +5,13 @@ import { getImage } from './helpers';
 export const prerender = false;
 
 export const load: LayoutLoad = async ({ }) => {
+
+    // get all users
+    const users = await db.query.user.findMany();
+
+    // get all transactions
+    const transactions = await db.query.payments.findMany();
+
     // load book auctions
     const books = await db.query.books.findMany({
         with: {
@@ -17,5 +24,5 @@ export const load: LayoutLoad = async ({ }) => {
         book.fileKey = getImage({ filekey: book.fileKey });
     })
 
-    return { books }
+    return { books, userCount: users.length, transactionCount: transactions.length }
 }

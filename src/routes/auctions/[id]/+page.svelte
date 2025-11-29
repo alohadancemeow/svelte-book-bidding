@@ -99,7 +99,7 @@
       <img
         src={auction.image || FALLBACK_IMAGE}
         alt={auction.name}
-        class="w-full h-96 lg:h-[430px] object-cover"
+        class="w-full h-96 lg:h-[530px] object-cover"
       />
     </div>
 

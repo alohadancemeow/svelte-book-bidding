@@ -36,9 +36,26 @@ export const load: PageServerLoad = async ({ locals }) => {
     // seperate uniqueBids into two arrays:
     // 1. bids that are still active
     // 2. bids that are ended
-
     const activeBids = uniqueBids.filter(b => b.item?.endDate > new Date());
-    const endedBids = uniqueBids.filter(b => b.item?.endDate <= new Date());
+    let endedBids = uniqueBids.filter(b => b.item?.endDate <= new Date());
+
+    const myPayments = await db.query.payments.findMany({
+        where: (p, { eq }) => eq(p.userId, user.id),
+    });
+
+    const paidItemIds = new Set(
+        myPayments
+            .filter((p) => ["paid", "succeeded", "completed"].includes(p.status))
+            .map((p) => String(p.itemId))
+    );
+
+    // exclude endedBids that have been paid
+    endedBids = endedBids.filter((b) => {
+        const id = b.item?.id;
+        if (id == null) return false;
+
+        return !paidItemIds.has(String(id));
+    });
 
     return { activeBids, endedBids };
 };

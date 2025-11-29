@@ -6,6 +6,8 @@
 
   let { data }: PageProps = $props();
 
+  // console.log(data.purchasedItems, data.soldItems);
+
   function formatCurrency(n?: number) {
     return `$${(n || 0).toLocaleString()}`;
   }
@@ -27,19 +29,19 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="bg-card border border-border rounded-lg p-4">
         <p class="text-sm text-muted-foreground">Sales Revenue</p>
-        <p class="text-2xl font-koulen">
+        <p class="text-2xl font-koulen mt-2">
           {formatCurrency(data.stats.salesRevenue)}
         </p>
       </div>
       <div class="bg-card border border-border rounded-lg p-4">
         <p class="text-sm text-muted-foreground">Pending Payment Value</p>
-        <p class="text-2xl font-koulen">
+        <p class="text-2xl font-koulen mt-2">
           {formatCurrency(data.stats.pendingPaymentValue)}
         </p>
       </div>
       <div class="bg-card border border-border rounded-lg p-4">
         <p class="text-sm text-muted-foreground">Total Expenses</p>
-        <p class="text-2xl font-koulen">
+        <p class="text-2xl font-koulen mt-2">
           {formatCurrency(data.stats.expenses)}
         </p>
       </div>
@@ -99,13 +101,13 @@
       </div>
     {/if}
 
-    <!-- todo: the items that user purchased -->
-    {#if data.myWonItems && data.myWonItems.length > 0}
+    <!-- Purchased Items -->
+    {#if data.purchasedItems && data.purchasedItems.length > 0}
       <h2 class="text-xl font-semibold text-foreground mt-8">
         Purchased Items
       </h2>
       <div class="space-y-4">
-        {#each data.myWonItems as book (book.id)}
+        {#each data.purchasedItems as book (book.id)}
           <div
             class="flex items-center gap-4 bg-card border border-border rounded-lg p-4"
           >
@@ -119,14 +121,17 @@
                 <a
                   href={`/auctions/${book.id}`}
                   class="font-semibold text-foreground hover:underline"
-                  >{book.name}</a
                 >
-                {#if book.author}<span class="text-sm text-muted-foreground"
-                    >by {book.author}</span
-                  >{/if}
+                  {book.name}
+                </a>
+                {#if book.author}
+                  <span class="text-sm text-muted-foreground">
+                    by {book.author}
+                  </span>
+                {/if}
               </div>
               <div class="mt-2 text-sm text-muted-foreground">
-                Ended: {formatDate(book.endDate)} · Your final:
+                Ended: {formatDate(book.endDate)} · Final:
                 <span class="font-semibold text-foreground">
                   {formatCurrency(book.currentBid)}
                 </span>
@@ -135,27 +140,26 @@
                 <span
                   class="inline-block bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-0.5 rounded text-xs"
                 >
-                  Won
+                  Purchased
                 </span>
               </div>
             </div>
-            <!-- href={`/auctions/${book.id}`} -->
-            <!-- onclick={() => onCheckout(book)} -->
-            <button
-              class="px-4 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
+            <a
+              href={`/auctions/${book.id}`}
+              class="px-4 py-2 font-koulen cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
             >
               View
-            </button>
+            </a>
           </div>
         {/each}
       </div>
     {/if}
 
-    <!-- todo: the items that user sold -->
-    {#if data.myWonItems && data.myWonItems.length > 0}
+    <!-- Sold Items -->
+    {#if data.soldItems && data.soldItems.length > 0}
       <h2 class="text-xl font-semibold text-foreground mt-8">Sold Items</h2>
       <div class="space-y-4">
-        {#each data.myWonItems as book (book.id)}
+        {#each data.soldItems as book (book.id)}
           <div
             class="flex items-center gap-4 bg-card border border-border rounded-lg p-4"
           >
@@ -169,11 +173,12 @@
                 <a
                   href={`/auctions/${book.id}`}
                   class="font-semibold text-foreground hover:underline"
-                  >{book.name}</a
                 >
-                {#if book.author}<span class="text-sm text-muted-foreground"
-                    >by {book.author}</span
-                  >{/if}
+                  {book.name}
+                </a>
+                {#if book.author}<span class="text-sm text-muted-foreground">
+                    by {book.author}
+                  </span>{/if}
               </div>
               <div class="mt-2 text-sm text-muted-foreground">
                 Ended: {formatDate(book.endDate)} · Sold for:
@@ -189,26 +194,26 @@
                 </span>
               </div>
             </div>
-            <!-- href={`/auctions/${book.id}`} -->
-            <!-- onclick={() => onCheckout(book)} -->
-            <button
-              class="px-4 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
+            <a
+              href={`/auctions/${book.id}`}
+              class="px-4 py-2 font-koulen cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
             >
               View
-            </button>
+            </a>
           </div>
         {/each}
       </div>
     {/if}
 
     <!-- No items -->
-    {#if (!data.awaitingPayment || data.awaitingPayment.length === 0) && (!data.myWonItems || data.myWonItems.length === 0)}
+    {#if (!data.awaitingPayment || data.awaitingPayment.length === 0) && (!data.purchasedItems || data.purchasedItems.length === 0) && (!data.soldItems || data.soldItems.length === 0)}
       <div class="bg-card border border-border rounded-lg p-8 text-center">
         <p class="text-lg font-medium text-foreground mb-2">
           No ended activity
         </p>
         <p class="text-muted-foreground mb-6">
-          When auctions end, you'll see pending payments and won items here.
+          When auctions end, you'll see pending payments, purchased, and sold
+          items here.
         </p>
         <a
           href="/dashboard"

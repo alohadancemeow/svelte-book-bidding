@@ -14,7 +14,6 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
-  <title>Book Bidding</title>
 </svelte:head>
 
 <div

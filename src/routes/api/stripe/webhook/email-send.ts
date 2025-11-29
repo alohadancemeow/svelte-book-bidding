@@ -1,8 +1,9 @@
 import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend'
+import { env } from '$env/dynamic/private'
 
 let mailerSend: MailerSend | null = null
-if (process.env.MAILERSEND_API_KEY) {
-    mailerSend = new MailerSend({ apiKey: process.env.MAILERSEND_API_KEY })
+if (env.MAILERSEND_API_KEY) {
+    mailerSend = new MailerSend({ apiKey: env.MAILERSEND_API_KEY })
 }
 
 export const sendPurchaseConfirmationEmail = async (
@@ -13,13 +14,11 @@ export const sendPurchaseConfirmationEmail = async (
     receiptUrl?: string | null,
     invoiceUrl?: string | null,
 ) => {
-    if (!mailerSend) return
+    if (!mailerSend || !env.MAILERSEND_FROM_EMAIL) return;
 
-    // testing: "MS_0aZPYE@test-yxj6lj9250x4do2r.mlsender.net"
-    // const sentFrom = process.env.MAILERSEND_FROM_EMAIL && process.env.MAILERSEND_FROM_NAME
-    //     ? new Sender(process.env.MAILERSEND_FROM_EMAIL, process.env.MAILERSEND_FROM_NAME)
-    //     : new Sender('MS_0aZPYE@test-yxj6lj9250x4do2r.mlsender.net', 'Book Bidding')
-    const sentFrom = new Sender('MS_0aZPYE@test-yxj6lj9250x4do2r.mlsender.net', 'Book Bidding')
+    // console.log(env.MAILERSEND_FROM_EMAIL, env.MAILERSEND_FROM_NAME, 'env');
+
+    const sentFrom = new Sender(env.MAILERSEND_FROM_EMAIL as string, (env.MAILERSEND_FROM_NAME as string) || 'Book Bidding')
     const recipients = [new Recipient(email, name)]
     const subject = `Your Purchase Confirmation – Book Bidding`
     const img = imageUrl ? `<p style="margin:16px 0"><img src="${imageUrl}" alt="${bookName}" style="max-width:520px;border-radius:8px" /></p>` : ''

@@ -15,7 +15,7 @@ function sanitizeUrl(raw: unknown): string | null {
 }
 
 // Handle checkout.session.completed event
-async function handleCheckoutSessionCompleted(event: any) {
+async function handleCheckoutSessionCompleted(event: any, userId: string) {
   const session = event.data.object as any
   const auctionId = session?.metadata?.auctionId
   if (!auctionId) return
@@ -27,6 +27,9 @@ async function handleCheckoutSessionCompleted(event: any) {
   const stripeSessionId = String(session?.id)
   let receiptUrl: string | null = null
 
+  // Email for sending purchase confirmation email
+  const email = session?.customer_details?.email || null
+
   // Get receipt url from payment intent
   if (paymentIntentId) {
     try {
@@ -36,13 +39,6 @@ async function handleCheckoutSessionCompleted(event: any) {
     } catch (error) {
       console.error(error)
     }
-  }
-
-  let userId: string | null = null
-  const email = session?.customer_details?.email || null
-  if (email) {
-    const u = await db.query.user.findFirst({ where: (t, { eq }) => eq(t.email, email) })
-    userId = u?.id ?? null
   }
 
   // Check if payment intent already exists, 
@@ -85,7 +81,7 @@ async function handleCheckoutSessionCompleted(event: any) {
 
   await db.insert(payments).values({
     id: crypto.randomUUID(),
-    userId,
+    userId, // Current user who won the auction
     itemId: String(auctionId),
     stripeSessionId,
     paymentIntentId,
@@ -148,7 +144,7 @@ async function handleInvoicePaymentSucceeded(event: any) {
 }
 
 // Handle Stripe webhook events, (checkout - charge - invoice)
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
   const sig = request.headers.get('stripe-signature')
   if (!sig) return new Response('Missing signature', { status: 400 })
 
@@ -170,7 +166,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
   // Handle checkout.session.completed event --> create payment record
   if (event.type === 'checkout.session.completed') {
-    await handleCheckoutSessionCompleted(event)
+    const session = event.data.object as any
+    const userId = session?.metadata?.userId || locals.user?.id || null
+    await handleCheckoutSessionCompleted(event, userId)
   }
 
   // Handle charge.succeeded event --> update receipt url

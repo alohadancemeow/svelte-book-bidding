@@ -121,7 +121,7 @@
               {#if isWinner(bid)}
                 <button
                   onclick={() => onCheckout(bid)}
-                  class="group font-koulen flex items-center gap-1 px-4 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm"
+                  class="group font-koulen flex items-center gap-1 px-4 py-2 cursor-pointer bg-green-600 text-primary-foreground rounded-lg hover:opacity-90 transition text-sm"
                 >
                   <span class="transition-transform group-hover:translate-x-0">
                     Checkout

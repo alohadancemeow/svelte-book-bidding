@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types'
-import { SECRET_STRIPE_WEBHOOK_SECRET } from '$env/static/private'
+import { env } from '$env/dynamic/private'
 import { stripe } from '$lib/stripe'
 import { db } from '$lib/server/db'
 import { payments } from '$lib/server/db/schema'
@@ -8,13 +8,13 @@ import { eq } from 'drizzle-orm'
 export const POST: RequestHandler = async ({ request }) => {
   const sig = request.headers.get('stripe-signature')
   if (!sig) return new Response('Missing signature', { status: 400 })
-  if (!SECRET_STRIPE_WEBHOOK_SECRET) return new Response('Webhook secret not set', { status: 500 })
+  if (!env.SECRET_STRIPE_WEBHOOK_SECRET) return new Response('Webhook secret not set', { status: 500 })
 
   const body = await request.text()
   let event: any
 
   try {
-    event = stripe.webhooks.constructEvent(body, sig, SECRET_STRIPE_WEBHOOK_SECRET)
+    event = stripe.webhooks.constructEvent(body, sig, env.SECRET_STRIPE_WEBHOOK_SECRET)
   } catch {
     return new Response('Invalid signature', { status: 400 })
   }

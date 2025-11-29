@@ -1,47 +1,44 @@
 # Book Bidding (SvelteKit)
 
-A simple auction platform built with SvelteKit 5. Users can create book auctions, upload cover images, and place real-time bids.
+An auction platform built with SvelteKit 5. Users create book auctions, upload cover images, place bids in real time, and track sales and payments.
 
 ## Stack
 - SvelteKit 5, Svelte Runes
-- Better Auth with Drizzle adapter (LibSQL/Turso)
+- Better Auth + Drizzle adapter (LibSQL/Turso)
 - Supabase Storage for images
-- Flowbite Svelte UI
-- Tailwind v4
+- Stripe Checkout
+- Flowbite Svelte UI, Tailwind v4
 - Vitest for tests
 
 ## Features
-- Email/password authentication
-- Create/edit auctions with image upload
-- Real-time bid updates via Server-Sent Events
+- Authentication: Email/password login, optional Google/GitHub signup
+- Auctions: Create/edit with image upload
+- Bidding: Real-time updates via Server-Sent Events (SSE)
+- My Bids: Separated Active and Ended sections
+- Sales: Stats include Pending Payment Value, Expenses, and Sales Revenue
+- Checkout: Stripe session creation API for won items
 
 ## Setup
 ```sh
-# install
 npm install
-
-# dev
 npm run dev
-
-# type check
-npm run check
-
-# tests
-npm run test
-
-# build & preview
+npm run check        # type check
+npm run test         # unit tests
 npm run build && npm run preview
 ```
 
 ## Environment
-Set these in `.env` (private) or `.env.local`:
-- `BETTER_AUTH_SECRET`: long random secret
-- `BETTER_AUTH_URL`: app base URL (e.g. http://localhost:5173)
-- `DATABASE_URL`: Turso/LibSQL URL
-- `DATABASE_AUTH_TOKEN`: Turso auth token
-- `PUBLIC_SUPABASE_URL`: Supabase project URL
-- `PUBLIC_SUPABASE_PUBLISHABLE_KEY`: Supabase anon key
-- Optional for email: `RESEND_API_KEY`, `EMAIL_FROM`
+Set in `.env` (private) or `.env.local`:
+- `BETTER_AUTH_SECRET` — long random secret
+- `BETTER_AUTH_URL` — app base URL (e.g. http://localhost:5173)
+- `DATABASE_URL` — Turso/LibSQL URL
+- `DATABASE_AUTH_TOKEN` — Turso auth token
+- `PUBLIC_SUPABASE_URL` — Supabase project URL
+- `PUBLIC_SUPABASE_PUBLISHABLE_KEY` — Supabase anon key
+- `SECRET_STRIPE_KEY` — Stripe secret key
+- `PUBLIC_FRONTEND_URL` — public base URL used by Stripe redirects
+- Optional email: `RESEND_API_KEY`, `EMAIL_FROM`
+- Optional OAuth: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
 
 ## Database
 Drizzle with LibSQL/Turso.
@@ -50,32 +47,33 @@ npm run db:generate   # generate SQL
 npm run db:migrate    # apply migrations
 npm run db:studio     # inspect
 ```
-Schema is in `src/lib/server/db/schema.ts`.
+Schema in `src/lib/server/db/schema.ts`.
 
-## Auth & Cookies
-`src/lib/auth.ts` configures Better Auth with `sveltekitCookies(getRequestEvent)`. `src/hooks.server.ts` mounts the handler and populates `event.locals.user`/`session`. Client uses `src/lib/auth-client.ts`.
+## Auth
+- Server: `src/lib/auth.ts` enables email/password. `src/hooks.server.ts` mounts Better Auth and populates `event.locals.user`/`session`.
+- Client: `src/lib/auth-client.ts` provides `authClient` for login and social sign-in.
+- OAuth: To enable Google/GitHub, add `socialProviders` in `src/lib/auth.ts` and set provider callback URLs (e.g. `http://localhost:5173/api/auth/callback/google` and `/github`).
 
 ## Email Verification
-- Server: `emailVerification.sendVerificationEmail` sends the verification link using your `sendEmail` utility.
-- Client: trigger via
 ```ts
-await authClient.sendVerificationEmail({
-  email: userEmail,
-  callbackURL: "/"
-});
+await authClient.sendVerificationEmail({ email: userEmail, callbackURL: "/" });
 ```
-- Clicking the link verifies the email and redirects to `callbackURL`; invalid tokens redirect with `?error=invalid_token`.
-- To require verification on login, enable:
-  - `emailAndPassword.requireEmailVerification: true`
-  - `emailVerification.sendOnSignIn: true`
+Enable on server via `emailAndPassword.requireEmailVerification` and `emailVerification.sendOnSignIn`.
 
 ## Image Upload
-Images are uploaded to Supabase. Preview shows the selected file; if none selected, it shows the existing stored image via a public URL.
+Supabase Storage holds images. Previews use the public URL from the stored `fileKey`.
 
 ## Realtime Bids
-SSE endpoint at `routes/api/realtime/bids` streams bid updates. Client store in `src/lib/stores/realtime.ts` handles connection and broadcasts.
+SSE at `routes/api/realtime/bids` streams bid events. Client store in `src/lib/stores/realtime.ts` manages connection and updates.
+
+## Sales & Payments
+- API: `routes/api/checkout/+server.ts` creates Stripe sessions.
+- Stats:
+  - Pending Payment Value — sum of ended auctions awaiting payment
+  - Expenses — sum of your successful payments (`paid/succeeded/completed`)
+  - Sales Revenue — sum of successful payments to your auctions
 
 ## Deployment
-- Set `BETTER_AUTH_URL` to your domain.
-- Choose and configure a SvelteKit adapter for your target.
-- Ensure env vars are set on the host.
+- Set `BETTER_AUTH_URL` and `PUBLIC_FRONTEND_URL` to your domain.
+- Configure your SvelteKit adapter.
+- Ensure all environment variables are set on the host.

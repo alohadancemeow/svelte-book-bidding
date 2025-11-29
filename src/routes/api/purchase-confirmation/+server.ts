@@ -1,17 +1,17 @@
 import 'dotenv/config';
 import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
 import { json } from '@sveltejs/kit';
-import { MAILERSEND_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 
 // MailerSend Config
-// check if MAILERSEND_API_KEY is set
-if (!MAILERSEND_API_KEY) {
+// check if env.MAILERSEND_API_KEY is set
+if (!env.MAILERSEND_API_KEY) {
     throw new Error('MAILERSEND_API_KEY is not set');
 }
 
 const mailerSend = new MailerSend({
-    apiKey: MAILERSEND_API_KEY,
+    apiKey: env.MAILERSEND_API_KEY,
 });
 
 // const PDF_GUIDE_URL = 'https://narrify-public.s3.eu-central-1.amazonaws.com/sample.pdf';

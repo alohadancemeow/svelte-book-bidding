@@ -72,6 +72,20 @@
       minute: "2-digit",
     });
   };
+
+  // filter books that are not ended and sort by endDate
+  const activeBooks = data.books
+    .filter((b) => {
+      const end = new Date(b.endDate).getTime();
+      const now = Date.now();
+      return end > now;
+    })
+    .sort((a, b) => {
+      const endA = new Date(a.endDate).getTime();
+      const endB = new Date(b.endDate).getTime();
+      return endA - endB;
+    })
+    .slice(0, 8);
 </script>
 
 <svelte:head>
@@ -145,10 +159,10 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {#each data.books as book (book.id)}
+        {#each activeBooks as book (book.id)}
           <a href={`/auctions/${book.id}`} class="group">
             <div
-              class="bg-card rounded-md overflow-hidden border border-border transition-all duration-300 hover:shadow-xl"
+              class="bg-card min-h-[447px] rounded-md overflow-hidden border border-border transition-all duration-300 hover:shadow-xl"
             >
               <!-- Image -->
               <div class="relative h-64 overflow-hidden bg-muted">

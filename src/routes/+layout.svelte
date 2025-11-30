@@ -7,13 +7,31 @@
   import { goto } from "$app/navigation";
   import { FALLBACK_IMAGE } from "./dashboard/shared/constants";
   import { Button, Modal, P } from "flowbite-svelte";
+  import { PUBLIC_BASE_URL, PUBLIC_FRONTEND_URL } from "$env/static/public";
+  import { dev } from "$app/environment";
 
   let { children, data }: { children: Snippet; data: LayoutData } = $props();
   let open = $state(false);
+  
+  const siteUrl = dev ? PUBLIC_BASE_URL : PUBLIC_FRONTEND_URL;
+  const siteName = "Book Bidding";
+  const siteDesc = "Premium book auction platform for collectors.";
 </script>
 
 <svelte:head>
   <link rel="icon" href={favicon} />
+  <link rel="canonical" href={siteUrl} />
+  <meta name="robots" content="index,follow" />
+  <meta name="description" content={siteDesc} />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={siteName} />
+  <meta property="og:description" content={siteDesc} />
+  <meta property="og:image" content={FALLBACK_IMAGE} />
+  <meta property="og:url" content={siteUrl} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={siteName} />
+  <meta name="twitter:description" content={siteDesc} />
+  <meta name="twitter:image" content={FALLBACK_IMAGE} />
 </svelte:head>
 
 <div

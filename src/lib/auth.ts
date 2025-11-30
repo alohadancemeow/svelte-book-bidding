@@ -4,20 +4,22 @@ import { db } from "./server/db";
 import { getRequestEvent } from "$app/server";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { env } from "$env/dynamic/private";
+import { PUBLIC_BASE_URL, PUBLIC_FRONTEND_URL } from "$env/static/public";
+import { dev } from "$app/environment";
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
         provider: "sqlite", // or "mysql", "sqlite"
     }),
 
-    // Configure base URL for Vercel deployment
-    baseURL: env.BETTER_AUTH_URL || "http://localhost:5173",
+    // Configure base URL for dev vs production
+    baseURL: dev ? (PUBLIC_BASE_URL || env.BETTER_AUTH_URL) : PUBLIC_FRONTEND_URL,
 
-    // Add trusted origins for production
+    // Add trusted origins for dev and production
     trustedOrigins: [
-        env.BETTER_AUTH_URL || "http://localhost:5173",
-        "http://localhost:5173",
-        "https://localhost:5173"
+        dev ? (PUBLIC_BASE_URL || env.BETTER_AUTH_URL) : PUBLIC_FRONTEND_URL,
+        PUBLIC_BASE_URL,
+        PUBLIC_FRONTEND_URL,
     ].filter(Boolean),
 
     emailAndPassword: {

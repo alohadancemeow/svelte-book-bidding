@@ -107,33 +107,33 @@
         Purchased Items
       </h2>
       <div class="space-y-4">
-        {#each data.purchasedItems as book (book.id)}
+        {#each data.purchasedItems as purchase (purchase.item.id)}
           <div
             class="flex items-center gap-4 bg-card border border-border rounded-lg p-4"
           >
             <img
-              src={book.fileKey || FALLBACK_IMAGE}
-              alt={book.name || "Auction"}
+              src={purchase.item.fileKey || FALLBACK_IMAGE}
+              alt={purchase.item.name || "Auction"}
               class="w-20 h-20 rounded object-cover border border-border"
             />
             <div class="flex-1">
               <div class="flex flex-wrap items-center gap-2">
                 <a
-                  href={`/auctions/${book.id}`}
+                  href={`/auctions/${purchase.item.id}`}
                   class="font-semibold text-foreground hover:underline"
                 >
-                  {book.name}
+                  {purchase.item.name}
                 </a>
-                {#if book.author}
+                {#if purchase.item.author}
                   <span class="text-sm text-muted-foreground">
-                    by {book.author}
+                    by {purchase.item.author}
                   </span>
                 {/if}
               </div>
               <div class="mt-2 text-sm text-muted-foreground">
-                Ended: {formatDate(book.endDate)} · Final:
+                Ended: {formatDate(purchase.item.endDate)} · Final:
                 <span class="font-semibold text-foreground">
-                  {formatCurrency(book.currentBid)}
+                  {formatCurrency(purchase.item.currentBid)}
                 </span>
               </div>
               <div class="mt-1 flex gap-2 items-center">
@@ -144,12 +144,16 @@
                 </span>
               </div>
             </div>
-            <a
-              href={`/auctions/${book.id}`}
-              class="px-4 py-2 font-koulen cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
-            >
-              View
-            </a>
+            {#if purchase.receiptUrl}
+              <a
+                href={purchase.receiptUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-4 py-2 font-koulen cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
+              >
+                View Receipt
+              </a>
+            {/if}
           </div>
         {/each}
       </div>

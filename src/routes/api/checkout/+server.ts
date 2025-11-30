@@ -1,11 +1,13 @@
 import { stripe } from '$lib/stripe';
-import { PUBLIC_FRONTEND_URL } from '$env/static/public';
-import { json, redirect } from '@sveltejs/kit';
+import { PUBLIC_FRONTEND_URL, PUBLIC_BASE_URL } from '$env/static/public';
+import { dev } from '$app/environment';
+import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-    const { amount, currency = 'usd', name, mode = 'payment', metadata } = await request.json();
+    const baseUrl = dev ? PUBLIC_BASE_URL : PUBLIC_FRONTEND_URL;
 
+    const { amount, currency = 'usd', name, mode = 'payment', metadata } = await request.json();
     const unitAmount = Math.max(0, Math.round(Number(amount) * 100));
 
     const session = await stripe.checkout.sessions.create({
@@ -25,12 +27,12 @@ export const POST: RequestHandler = async ({ request }) => {
         mode,
         invoice_creation: { enabled: true },
         customer_creation: 'always',
-        success_url: `${PUBLIC_FRONTEND_URL}/checkout/success`,
-        cancel_url: `${PUBLIC_FRONTEND_URL}/checkout/failure`,
+        success_url: `${baseUrl}/checkout/success`,
+        cancel_url: `${baseUrl}/checkout/failure`,
         metadata,
     });
 
-    console.log(session, 'session');
+    // console.log(session, 'session');
 
     // return json({ sessionId: session.id });
     if (!session.url) {

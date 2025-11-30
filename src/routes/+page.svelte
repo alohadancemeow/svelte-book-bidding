@@ -101,33 +101,35 @@
 </div>
 
 {#snippet endingSoon()}
-  <Section
-    name="schedule"
-    sectionClass="bg-white dark:bg-gray-900 antialiased px-4 md:px-8 py-8"
-  >
-    <Schedule scheduleName="Ending Soon">
-      {#snippet subtitle()}
-        <div class="mt-4">
-          <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Bid now to reserve the book you are interested in!
-          </p>
-        </div>
-      {/snippet}
-      {#each endingSoonBooks as item}
-        <div class="flex gap-2 items-center">
-          <!-- <ClockOutline class="shrink-0 h-6 w-6" /> -->
-          <p class="text-lg">⏰</p>
-          <ScheduleItem
-            item={{
-              title: item.name,
-              href: `/auctions/${item.id}`,
-              time: formatEndingSoonDate(item.endDate),
-            }}
-          />
-        </div>
-      {/each}
-    </Schedule>
-  </Section>
+  <div id="ending-soon">
+    <Section
+      name="schedule"
+      sectionClass="bg-white dark:bg-gray-900 antialiased px-4 md:px-8 py-8"
+    >
+      <Schedule scheduleName="Ending Soon">
+        {#snippet subtitle()}
+          <div class="mt-4">
+            <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Bid now to reserve the book you are interested in!
+            </p>
+          </div>
+        {/snippet}
+        {#each endingSoonBooks as item}
+          <div class="flex gap-2 items-center">
+            <!-- <ClockOutline class="shrink-0 h-6 w-6" /> -->
+            <p class="text-lg">⏰</p>
+            <ScheduleItem
+              item={{
+                title: item.name,
+                href: `/auctions/${item.id}`,
+                time: formatEndingSoonDate(item.endDate),
+              }}
+            />
+          </div>
+        {/each}
+      </Schedule>
+    </Section>
+  </div>
 {/snippet}
 
 {#snippet featuredItems()}

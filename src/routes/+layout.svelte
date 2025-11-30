@@ -151,9 +151,7 @@
               <a href="/auctions" class="hover:opacity-100">All Auctions</a>
             </li>
             <li>
-              <a href="/auctions?status=ending-soon" class="hover:opacity-100"
-                >Ending Soon</a
-              >
+              <a href="#ending-soon" class="hover:opacity-100">Ending Soon </a>
             </li>
           </ul>
         </div>

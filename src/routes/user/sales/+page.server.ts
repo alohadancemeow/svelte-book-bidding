@@ -57,21 +57,20 @@ export const load: PageServerLoad = async ({ locals }) => {
     awaitingPayment = myAuctions.filter((b) => (b.currentBid || 0) > 0 && !paidItemIds.has(String(b.id)));
     pendingPaymentValue = awaitingPayment.reduce((a, c) => a + (c.currentBid || 0), 0);
 
-    // get purchased items
+    // get purchased items (excluding items that have been sold)
     const purchasedItems = (() => {
-        const seenIds = new Set<string | number>();
-        const items = myPayments
-            .filter((p) => p.status === "paid" && p.userId === user.id)
-            .map((p) => p.item!)
-            .filter((item) => {
-                const id = item.id as string | number | undefined;
-                if (id == null || seenIds.has(id)) return false;
-
-                seenIds.add(id);
-                return true;
-            });
-
-        items.forEach((i) => { if (i.fileKey) i.fileKey = getImage({ filekey: i.fileKey }); });
+        const byId = new Map<string | number, { item: (typeof myPayments[number]['item']); receiptUrl: string | null }>();
+        for (const p of myPayments) {
+            if (p.status !== "paid" || p.userId !== user.id || !p.item) continue;
+            const item = p.item;
+            const id = item.id as string | number | undefined;
+            if (id == null) continue;
+            const existing = byId.get(id);
+            const receiptUrl = p.receiptUrl ?? existing?.receiptUrl ?? null;
+            byId.set(id, { item, receiptUrl });
+        }
+        const items = Array.from(byId.values());
+        items.forEach((entry) => { if (entry.item?.fileKey) entry.item.fileKey = getImage({ filekey: entry.item.fileKey }); });
         return items;
     })();
 

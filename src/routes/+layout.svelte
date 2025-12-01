@@ -6,13 +6,14 @@
   import { authClient } from "$lib/auth-client";
   import { goto } from "$app/navigation";
   import { FALLBACK_IMAGE } from "./dashboard/shared/constants";
-  import { Button, Modal, P } from "flowbite-svelte";
+  import { Button, Modal, P, Drawer } from "flowbite-svelte";
   import { PUBLIC_BASE_URL, PUBLIC_FRONTEND_URL } from "$env/static/public";
   import { dev } from "$app/environment";
 
   let { children, data }: { children: Snippet; data: LayoutData } = $props();
   let open = $state(false);
-  
+  let openDrawer = $state(false);
+
   const siteUrl = dev ? PUBLIC_BASE_URL : PUBLIC_FRONTEND_URL;
   const siteName = "Book Bidding";
   const siteDesc = "Premium book auction platform for collectors.";
@@ -35,7 +36,7 @@
 </svelte:head>
 
 <div
-  class="min-h-screen flex flex-col bg-background mx-8 lg:px-4 lg:mx-auto max-w-7xl"
+  class="min-h-screen flex flex-col bg-background mx-4 lg:px-4 lg:mx-auto max-w-7xl"
 >
   <!-- Navigation -->
   {@render navigation()}
@@ -114,7 +115,7 @@
           {/if}
         </div>
 
-        <div class="flex items-center gap-4 font-koulen">
+        <div class="hidden md:flex items-center gap-4 font-koulen">
           {#if data.sessionId && data.user}
             <div class="flex items-center gap-3">
               <img
@@ -146,18 +147,42 @@
             </a>
           {/if}
         </div>
+
+        <!-- Mobile Menu Button -->
+        <button
+          class="md:hidden cursor-pointer inline-flex items-center justify-center w-10 h-10 rounded-lg border border-border text-foreground hover:bg-muted transition"
+          aria-label="Open menu"
+          aria-expanded={openDrawer ? "true" : "false"}
+          onclick={() => (openDrawer = true)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   </nav>
+  {@render drawer()}
 {/snippet}
 
 <!-- Footer Snippet -->
 {#snippet footer()}
   <footer class="text-secondary-foreground border-t border-border mt-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
         <div>
-          <h3 class=" font-bold mb-4">About</h3>
+          <h3 class="font-bold mb-4">About</h3>
           <p class="text-sm opacity-75">
             Premium book auction platform for collectors.
           </p>
@@ -215,4 +240,86 @@
       </p>
     </div>
   </footer>
+{/snippet}
+
+<!-- Drawer Snippet -->
+{#snippet drawer()}
+  <Drawer
+    id="nav-drawer"
+    placement="right"
+    bind:open={openDrawer}
+    class="backdrop:bg-black/50"
+  >
+    <div class="bg-card h-full">
+      <div
+        class="flex items-center justify-between h-16 px-4 border-b border-border"
+      >
+        <div class="flex items-center gap-3">
+          {#if data.sessionId && data.user}
+            <img
+              src={data.user.image || FALLBACK_IMAGE}
+              alt={data.user?.name || "Username"}
+              class="w-8 h-8 rounded-full border border-border"
+            />
+            <span class="text-sm font-medium text-foreground"
+              >{data.user?.name || "Username"}</span
+            >
+          {:else}
+            <span class="font-koulen text-lg text-foreground">Menu</span>
+          {/if}
+        </div>
+      </div>
+      <div class="p-4">
+        {#if data.sessionId}
+          <div class="flex flex-col border-b border-border pb-4">
+            <a
+              href="/dashboard"
+              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            >
+              Dashboard
+            </a>
+            <a
+              href="/user/bids"
+              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            >
+              My Bids
+            </a>
+            <a
+              href="/user/sales"
+              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            >
+              My Sales
+            </a>
+            <a
+              href="/dashboard/create"
+              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            >
+              Create Auction
+            </a>
+          </div>
+        {/if}
+        <div class="mt-4">
+          {#if data.sessionId}
+            <button
+              onclick={async () => {
+                await authClient.signOut();
+                openDrawer = false;
+                goto("/auth/login", { invalidateAll: true });
+              }}
+              class="w-full cursor-pointer py-3 px-2 rounded-lg text-foreground hover:bg-red-900/30 transition font-koulen"
+            >
+              Sign Out
+            </button>
+          {:else}
+            <a
+              href="/auth/login"
+              class="block w-full py-3 px-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition font-koulen text-center"
+            >
+              Sign In
+            </a>
+          {/if}
+        </div>
+      </div>
+    </div>
+  </Drawer>
 {/snippet}

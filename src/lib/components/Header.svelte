@@ -29,7 +29,7 @@
       {#if cta}
         <button
           onclick={() => goto(cta.href)}
-          class="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
+          class="hidden md:inline-block px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition font-medium"
         >
           {cta.text}
         </button>

@@ -106,7 +106,7 @@
   {@render howItWorks()}
 
   <!-- Ending Soon (within 3 days) -->
-  {#if endingSoonBooks}
+  {#if endingSoonBooks.length !== 0}
     {@render endingSoon()}
   {/if}
 
@@ -147,7 +147,7 @@
 {/snippet}
 
 {#snippet featuredItems()}
-  <section class="py-20 px-4 sm:px-6 lg:px-8 border-b border-border">
+  <section class="py-20 sm:px-6 lg:px-8 border-b border-border">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-16">
         <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -158,7 +158,7 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 gap-2.5">
         {#each activeBooks as book (book.id)}
           <a href={`/auctions/${book.id}`} class="group">
             <div
@@ -186,7 +186,7 @@
               </div>
 
               <!-- Content -->
-              <div class="p-4">
+              <div class="p-2 md:p-4">
                 <h3
                   class="font-medium text-lg text-foreground mb-1 line-clamp-2 group-hover:text-primary transition-colors"
                 >
@@ -218,7 +218,7 @@
                     </div>
                   </div>
                   <div
-                    class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                    class="hidden w-10 h-10 bg-primary/10 rounded-lg md:flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all"
                   >
                     →
                   </div>
@@ -275,7 +275,7 @@
               Browse Auctions
             </a>
             <a
-              href={page.data.sessionId ? "/dashboard" : "/auth/signup"}
+              href={page.data.sessionId ? "/dashboard" : "/auth/login"}
               class="px-8 py-3 border-2 border-primary-foreground text-primary-foreground rounded-lg hover:bg-primary-foreground/10 transition-all duration-300"
             >
               Join Now
@@ -391,10 +391,10 @@
         class="flex gap-4 items-center justify-center flex-wrap font-koulen tracking-wider"
       >
         <a
-          href={page.data.sessionId ? "/dashboard/create" : "/auth/signup"}
+          href={page.data.sessionId ? "/dashboard/create" : "/auth/login"}
           class="px-6 py-2 bg-primary-foreground text-primary rounded-lg hover:shadow-lg transition-all"
         >
-          {page.data.sessionId ? "Create Auction" : "Create Account"}
+          {page.data.sessionId ? "Create Auction" : "Sign In"}
         </a>
         <a
           href="/auctions"

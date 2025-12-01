@@ -26,7 +26,7 @@
 
     <!-- Main Content -->
     <div>
-      <div class="p-8 w-full overflow-auto">
+      <div class="p-4 md:p-8 w-full overflow-auto">
         <FormField
           mode="edit"
           initialData={initialData

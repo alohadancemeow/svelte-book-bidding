@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import BidNotification from "$lib/components/bid-notification.svelte";
+  import BidNotification from "$lib/components/BidNotification.svelte";
   import { realtime } from "$lib/stores/realtime";
   import { ArrowLeftOutline } from "flowbite-svelte-icons";
   import { mapBooksToAuctions } from "../../helpers.js";

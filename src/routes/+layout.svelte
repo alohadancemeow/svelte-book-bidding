@@ -272,30 +272,42 @@
       <div class="p-4">
         {#if data.sessionId}
           <div class="flex flex-col border-b border-border pb-4">
-            <a
-              href="/dashboard"
-              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            <button
+              onclick={() => {
+                openDrawer = false;
+                goto("/dashboard");
+              }}
+              class="block cursor-pointer w-full text-left py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
             >
               Dashboard
-            </a>
-            <a
-              href="/user/bids"
-              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            </button>
+            <button
+              onclick={() => {
+                openDrawer = false;
+                goto("/user/bids");
+              }}
+              class="block cursor-pointer w-full text-left py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
             >
               My Bids
-            </a>
-            <a
-              href="/user/sales"
-              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            </button>
+            <button
+              onclick={() => {
+                openDrawer = false;
+                goto("/user/sales");
+              }}
+              class="block cursor-pointer w-full text-left py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
             >
               My Sales
-            </a>
-            <a
-              href="/dashboard/create"
-              class="block py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
+            </button>
+            <button
+              onclick={() => {
+                openDrawer = false;
+                goto("/dashboard/create");
+              }}
+              class="block cursor-pointer w-full text-left py-3 px-2 rounded-lg text-foreground hover:bg-muted font-koulen"
             >
               Create Auction
-            </a>
+            </button>
           </div>
         {/if}
         <div class="mt-4">
@@ -306,14 +318,14 @@
                 openDrawer = false;
                 goto("/auth/login", { invalidateAll: true });
               }}
-              class="w-full cursor-pointer py-3 px-2 rounded-lg text-foreground hover:bg-red-900/30 transition font-koulen"
+              class="w-full cursor-pointer py-3 px-2 rounded-lg text-foreground hover:bg-red-900/30 bg-red-900/50 transition font-koulen"
             >
               Sign Out
             </button>
           {:else}
             <a
               href="/auth/login"
-              class="block w-full py-3 px-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition font-koulen text-center"
+              class="block cursor-pointer w-full py-3 px-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition font-koulen text-center"
             >
               Sign In
             </a>

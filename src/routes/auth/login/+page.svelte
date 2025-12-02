@@ -1,6 +1,6 @@
 <script lang="ts">
   import { authClient } from "$lib/auth-client";
-  import AuthForm from "$lib/components/auth-form.svelte";
+  import AuthForm from "$lib/components/AuthForm.svelte";
 
   let loading = $state(false);
   let providerLoading: null | "google" | "github" = $state(null);

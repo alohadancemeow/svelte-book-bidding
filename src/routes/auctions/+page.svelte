@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AuctionCard from "$lib/components/auction-card.svelte";
+  import AuctionCard from "$lib/components/AuctionCard.svelte";
   import HeaderSection from "$lib/components/Header.svelte";
   import { mapBooksToAuctions } from "../helpers";
   import type { PageProps } from "./$types";

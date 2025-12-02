@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { FALLBACK_IMAGE } from "../../dashboard/shared/constants";
-  import { formatDate } from "../../helpers";
   import type { PageProps } from "./$types";
   import HeaderSection from "$lib/components/Header.svelte";
+  import BidItem from "$lib/components/BidItem.svelte";
 
   let { data }: PageProps = $props();
-
-  // console.log(data.purchasedItems, data.soldItems);
 
   function formatCurrency(n?: number) {
     return `$${(n || 0).toLocaleString()}`;
@@ -24,8 +21,8 @@
     cta={{ text: "Manage Auctions", href: "/dashboard" }}
   />
 
-  <!-- Stats -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+  <div class="max-w-7xl mx-auto md:px-4 lg:px-8 py-10 space-y-8">
+    <!-- Stats -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="bg-card border border-border rounded-lg p-4">
         <p class="text-sm text-muted-foreground">Sales Revenue</p>
@@ -48,166 +45,13 @@
     </div>
 
     <!-- Awaiting Payment -->
-    {#if data.awaitingPayment && data.awaitingPayment.length > 0}
-      <h2 class="text-xl font-semibold text-foreground">Awaiting Payment</h2>
-      <div class="space-y-4">
-        {#each data.awaitingPayment as book (book.id)}
-          <div
-            class="flex items-center gap-4 bg-card border border-border rounded-lg p-4"
-          >
-            <img
-              src={book.fileKey || FALLBACK_IMAGE}
-              alt={book.name || "Auction"}
-              class="w-20 h-20 rounded object-cover border border-border"
-            />
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <a
-                  href={`/auctions/${book.id}`}
-                  class="font-semibold text-foreground hover:underline"
-                >
-                  {book.name}
-                </a>
-                {#if book.author}<span class="text-sm text-muted-foreground">
-                    by {book.author}
-                  </span>
-                {/if}
-              </div>
-              <div class="mt-2 text-sm text-muted-foreground">
-                Ended: {formatDate(book.endDate)} · Final:
-                <span class="font-semibold text-foreground">
-                  {formatCurrency(book.currentBid)}
-                </span>
-                {#if book.bids?.length}
-                  · Bids: <span class="font-semibold">{book.bids.length}</span>
-                {/if}
-              </div>
-              <div class="mt-1 flex gap-2 items-center">
-                <span
-                  class="inline-block bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-2 py-0.5 rounded text-xs"
-                >
-                  Awaiting Payment
-                </span>
-              </div>
-            </div>
-            <a
-              href={`/auctions/${book.id}`}
-              class="px-4 font-koulen py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
-            >
-              View
-            </a>
-          </div>
-        {/each}
-      </div>
-    {/if}
+    {@render awaitingPaymentItems()}
 
     <!-- Purchased Items -->
-    {#if data.purchasedItems && data.purchasedItems.length > 0}
-      <h2 class="text-xl font-semibold text-foreground mt-8">
-        Purchased Items
-      </h2>
-      <div class="space-y-4">
-        {#each data.purchasedItems as purchase (purchase.item.id)}
-          <div
-            class="flex items-center gap-4 bg-card border border-border rounded-lg p-4"
-          >
-            <img
-              src={purchase.item.fileKey || FALLBACK_IMAGE}
-              alt={purchase.item.name || "Auction"}
-              class="w-20 h-20 rounded object-cover border border-border"
-            />
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <a
-                  href={`/auctions/${purchase.item.id}`}
-                  class="font-semibold text-foreground hover:underline"
-                >
-                  {purchase.item.name}
-                </a>
-                {#if purchase.item.author}
-                  <span class="text-sm text-muted-foreground">
-                    by {purchase.item.author}
-                  </span>
-                {/if}
-              </div>
-              <div class="mt-2 text-sm text-muted-foreground">
-                Ended: {formatDate(purchase.item.endDate)} · Final:
-                <span class="font-semibold text-foreground">
-                  {formatCurrency(purchase.item.currentBid)}
-                </span>
-              </div>
-              <div class="mt-1 flex gap-2 items-center">
-                <span
-                  class="inline-block bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-0.5 rounded text-xs"
-                >
-                  Purchased
-                </span>
-              </div>
-            </div>
-            {#if purchase.receiptUrl}
-              <a
-                href={purchase.receiptUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="px-4 py-2 font-koulen cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
-              >
-                View Receipt
-              </a>
-            {/if}
-          </div>
-        {/each}
-      </div>
-    {/if}
+    {@render purchasedItems()}
 
     <!-- Sold Items -->
-    {#if data.soldItems && data.soldItems.length > 0}
-      <h2 class="text-xl font-semibold text-foreground mt-8">Sold Items</h2>
-      <div class="space-y-4">
-        {#each data.soldItems as book (book.id)}
-          <div
-            class="flex items-center gap-4 bg-card border border-border rounded-lg p-4"
-          >
-            <img
-              src={book.fileKey || FALLBACK_IMAGE}
-              alt={book.name || "Auction"}
-              class="w-20 h-20 rounded object-cover border border-border"
-            />
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <a
-                  href={`/auctions/${book.id}`}
-                  class="font-semibold text-foreground hover:underline"
-                >
-                  {book.name}
-                </a>
-                {#if book.author}<span class="text-sm text-muted-foreground">
-                    by {book.author}
-                  </span>{/if}
-              </div>
-              <div class="mt-2 text-sm text-muted-foreground">
-                Ended: {formatDate(book.endDate)} · Sold for:
-                <span class="font-semibold text-foreground">
-                  {formatCurrency(book.currentBid)}
-                </span>
-              </div>
-              <div class="mt-1 flex gap-2 items-center">
-                <span
-                  class="inline-block bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 px-2 py-0.5 rounded text-xs"
-                >
-                  Sold
-                </span>
-              </div>
-            </div>
-            <a
-              href={`/auctions/${book.id}`}
-              class="px-4 py-2 font-koulen cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm text-center"
-            >
-              View
-            </a>
-          </div>
-        {/each}
-      </div>
-    {/if}
+    {@render soldItems()}
 
     <!-- No items -->
     {#if (!data.awaitingPayment || data.awaitingPayment.length === 0) && (!data.purchasedItems || data.purchasedItems.length === 0) && (!data.soldItems || data.soldItems.length === 0)}
@@ -229,3 +73,39 @@
     {/if}
   </div>
 </div>
+
+<!-- Awaiting Payment Snippet -->
+{#snippet awaitingPaymentItems()}
+  {#if data.awaitingPayment && data.awaitingPayment.length > 0}
+    <h2 class="text-xl font-semibold text-foreground">Awaiting Payment</h2>
+    <div class="space-y-4">
+      {#each data.awaitingPayment as book (book.id)}
+        <BidItem mode="awaiting" {book} />
+      {/each}
+    </div>
+  {/if}
+{/snippet}
+
+<!-- Purchased Items Snippet -->
+{#snippet purchasedItems()}
+  {#if data.purchasedItems && data.purchasedItems.length > 0}
+    <h2 class="text-xl font-semibold text-foreground mt-8">Purchased Items</h2>
+    <div class="space-y-4">
+      {#each data.purchasedItems as purchase (purchase.item.id)}
+        <BidItem mode="purchased" {purchase} />
+      {/each}
+    </div>
+  {/if}
+{/snippet}
+
+<!-- Sold Items Snippet -->
+{#snippet soldItems()}
+  {#if data.soldItems && data.soldItems.length > 0}
+    <h2 class="text-xl font-semibold text-foreground mt-8">Sold Items</h2>
+    <div class="space-y-4">
+      {#each data.soldItems as book (book.id)}
+        <BidItem mode="sold" {book} />
+      {/each}
+    </div>
+  {/if}
+{/snippet}

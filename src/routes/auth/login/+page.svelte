@@ -29,6 +29,15 @@
   class="min-h-screen bg-linear-to-b from-primary/10 to-background flex items-center justify-center px-4"
 >
   <div class="w-full max-w-md">
+    <div
+      class="bg-primary/10 border border-primary/20 text-primary rounded-lg p-4 mb-4 text-center text-sm"
+    >
+      <p class="font-medium mb-1">Demo Account Access</p>
+      <p>
+        Email: <strong>admin@gmail.com</strong> &bull; Password:
+        <strong>123456789</strong>
+      </p>
+    </div>
     <div class="bg-card border border-border rounded-lg p-8 shadow-lg">
       <div class="text-center mb-4">
         <div

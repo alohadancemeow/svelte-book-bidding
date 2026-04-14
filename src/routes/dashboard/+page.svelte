@@ -7,6 +7,7 @@
   import Icon from "$lib/components/Icon.svelte";
   import ConditionChip from "$lib/components/ConditionChip.svelte";
   import type { PageProps } from "./$types";
+  import { FALLBACK_IMAGE } from "./shared/constants";
 
   let { data }: PageProps = $props();
 

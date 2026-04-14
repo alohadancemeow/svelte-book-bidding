@@ -268,7 +268,7 @@
             <div
               class="w-12 h-12 rounded-full bg-primary flex items-center justify-center font-headline font-bold text-on-primary"
             >
-              {auction.user.name.charAt(0)}
+              {auction.user?.name?.charAt(0) || '?'}
             </div>
             <div>
               <span

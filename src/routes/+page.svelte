@@ -11,10 +11,7 @@
     transactions: data.transactionCount,
     rareBooks: data.books.length,
     happyCollectors: data.userCount,
-    totalSales: data.books.reduce(
-      (acc, book) => acc + (book.currentBid || 0),
-      0,
-    ),
+    totalSales: data.books.reduce((acc, book) => acc + (book.currentBid || 0), 0),
   };
 
   const activeBooks = data.books
@@ -32,143 +29,93 @@
 </script>
 
 <svelte:head>
-  <title>Book Bidding | Rare Literary Treasures</title>
+  <title>The Antiquarian | Rare Literary Treasures</title>
 </svelte:head>
 
 <div class="bg-background overflow-hidden">
   {@render hero()}
-  {@render statistics()}
   {@render activeCollections()}
   {@render howItWorks()}
   {@render cta()}
 </div>
 
 {#snippet hero()}
-  <section class="relative pt-20 pb-32 px-4 md:px-8 max-w-screen-2xl mx-auto">
-    <!-- Decorative background elements -->
-    <div class="absolute top-0 right-0 -z-10 opacity-10">
-      <span
-        class="font-headline text-[30rem] leading-none text-primary italic select-none pointer-events-none"
-        >"</span
-      >
+  <section class="relative pt-20 pb-40 px-4 md:px-8 max-w-screen-2xl mx-auto">
+    <!-- Decorative Quote Mark -->
+    <div class="absolute top-0 right-[20%] -z-10 opacity-5">
+      <span class="font-headline text-[30rem] leading-none text-primary italic select-none pointer-events-none">"</span>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-      <div class="lg:col-span-7 space-y-8">
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <div class="h-[2px] w-12 bg-secondary"></div>
-            <span
-              class="font-label font-bold text-xs uppercase tracking-[0.3em] text-secondary"
-              >Est. 2024</span
-            >
+      <div class="lg:col-span-7 space-y-10">
+        <div class="space-y-6">
+          <div class="inline-flex items-center gap-2 bg-secondary px-3 py-1 rounded shadow-lg shadow-secondary/20">
+            <div class="w-1.5 h-1.5 rounded-full bg-on-secondary animate-pulse"></div>
+            <span class="font-label font-bold text-[10px] uppercase tracking-widest text-on-secondary">Masterpiece Auction</span>
           </div>
-          <h1
-            class="text-6xl md:text-8xl font-headline font-black text-primary leading-[0.9] tracking-tighter"
-          >
-            DISCOVER RARE <br /> <span class="text-secondary">BOOKS</span>, WIN
-            <br /> TREASURES.
-          </h1>
+
+          <div class="space-y-2">
+            <h1 class="text-7xl md:text-9xl font-headline font-black text-primary leading-[0.85] tracking-tighter">
+              The Great <br /> <span class="text-secondary italic">Gatsby.</span>
+            </h1>
+          </div>
+
+          <p class="text-lg font-body text-on-surface-variant max-w-lg leading-relaxed">
+            A pristine 1925 first edition, first issue, featuring the iconic Francis Cugat dust jacket. An unparalleled artifact of the Jazz Age, preserved in exceptional condition for the discerning collector.
+          </p>
         </div>
 
-        <p
-          class="text-xl font-body text-on-surface-variant max-w-xl leading-relaxed"
-        >
-          Join thousands of collectors bidding on the world's most sought-after
-          first editions, signed copies, and literary treasures.
-        </p>
-
-        <div class="flex flex-wrap gap-4 pt-4">
+        <div class="flex flex-wrap gap-4">
           <a
             href="/auctions"
-            class="px-10 py-4 bg-primary text-on-primary rounded-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 font-headline font-bold uppercase tracking-widest text-sm"
+            class="px-10 py-4 bg-primary text-on-primary rounded-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 font-headline font-bold uppercase tracking-widest text-xs flex items-center gap-3"
           >
-            Browse Auctions
+            Start Bidding
+            <Icon icon="trending_up" class="text-lg" />
           </a>
-          <a
-            href={page.data.sessionId ? "/dashboard" : "/auth/login"}
-            class="px-10 py-4 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-500 font-headline font-bold uppercase tracking-widest text-sm"
+          <button
+            class="px-10 py-4 border-2 border-outline-variant/30 text-primary rounded-lg hover:bg-surface-container-low transition-all duration-500 font-headline font-bold uppercase tracking-widest text-xs"
           >
-            Join Now
-          </a>
+            View Provenance
+          </button>
+        </div>
+
+        <div class="flex gap-16 pt-8 border-t border-outline-variant/10">
+          <div class="flex flex-col">
+            <span class="text-[10px] font-label font-bold text-outline uppercase tracking-widest mb-2">Current High Bid</span>
+            <span class="font-headline font-black text-4xl text-primary">$184,200.00</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[10px] font-label font-bold text-outline uppercase tracking-widest mb-2">Ends In</span>
+            <span class="font-headline font-black text-4xl text-secondary">04:12:55</span>
+          </div>
         </div>
       </div>
 
       <div class="lg:col-span-5 relative">
         <!-- Main Hero Image -->
-        <div
-          class="relative z-10 transform -rotate-3 hover:rotate-0 transition-transform duration-700"
-        >
-          <div
-            class="aspect-[4/5] rounded-2xl overflow-hidden book-shadow border-b-4 border-secondary"
-          >
-            <img
-              src={FALLBACK_IMAGE}
-              alt="Rare book collection"
-              class="w-full h-full object-cover"
-            />
+        <div class="relative z-10 transform rotate-3 hover:rotate-0 transition-transform duration-1000">
+          <div class="aspect-[4/5] rounded-xl overflow-hidden shadow-[30px_30px_60px_-15px_rgba(0,0,0,0.3)] border-b-8 border-primary">
+            <img src={FALLBACK_IMAGE} alt="The Great Gatsby First Edition" class="w-full h-full object-cover" />
           </div>
 
-          <!-- Glassmorphism Detail Card -->
-          <div
-            class="absolute -bottom-8 -left-8 glass-overlay p-6 rounded-xl border border-white/20 shadow-2xl max-w-[240px] hidden md:block"
-          >
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-secondary"></div>
-              <span
-                class="font-label font-bold text-[10px] uppercase tracking-widest text-secondary"
-                >Live Auction</span
-              >
-            </div>
-            <h3
-              class="font-headline font-bold text-lg text-primary leading-tight mb-2"
-            >
-              The Great Gatsby
-            </h3>
-            <div class="flex justify-between items-end">
-              <div class="flex flex-col">
-                <span
-                  class="text-[9px] font-label font-bold text-outline uppercase"
-                  >Current Bid</span
-                >
-                <span class="font-headline font-black text-xl text-primary"
-                  >$12,450</span
-                >
+          <!-- Quality Tag Overlap -->
+          <div class="absolute bottom-12 -right-8 glass-overlay p-6 rounded-xl border border-white/20 shadow-2xl max-w-[280px] hidden md:block">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="bg-secondary text-on-secondary text-[8px] font-bold px-1.5 py-0.5 rounded">EXCELLENT</div>
               </div>
-              <Icon icon="trending_up" class="text-secondary text-xl" />
+              <Icon icon="verified" class="text-secondary text-lg" />
+            </div>
+            <p class="text-xs font-body italic text-primary leading-relaxed mb-4">
+              "So we beat on, boats against the current, borne back ceaselessly into the past."
+            </p>
+            <div class="flex items-center gap-2 border-t border-outline-variant/10 pt-3">
+              <Icon icon="signature" class="text-sm text-outline" />
+              <span class="text-[9px] font-label font-bold text-outline uppercase">Signed by F. Scott Fitzgerald</span>
             </div>
           </div>
         </div>
-
-        <!-- Decorative elements -->
-        <div
-          class="absolute -top-12 -right-12 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -z-10"
-        ></div>
-        <div
-          class="absolute -bottom-12 -left-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-10"
-        ></div>
-      </div>
-    </div>
-  </section>
-{/snippet}
-
-{#snippet statistics()}
-  <section
-    class="py-12 border-y border-outline-variant/10 bg-surface-container-lowest"
-  >
-    <div class="max-w-screen-2xl mx-auto px-4 md:px-8">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-        {#each [{ label: "Rare Books", value: stats.rareBooks }, { label: "Transactions", value: stats.transactions }, { label: "Happy Collectors", value: stats.happyCollectors }, { label: "Total Value", value: `$${(stats.totalSales / 1000).toFixed(1)}k+` }] as item}
-          <div class="flex flex-col items-center text-center">
-            <span class="font-headline font-black text-4xl text-primary mb-1"
-              >{item.value}</span
-            >
-            <span
-              class="font-label font-bold text-[10px] uppercase tracking-[0.2em] text-outline"
-              >{item.label}</span
-            >
-          </div>
-        {/each}
       </div>
     </div>
   </section>
@@ -176,38 +123,20 @@
 
 {#snippet activeCollections()}
   <section class="py-24 px-4 md:px-8 max-w-screen-2xl mx-auto">
-    <div
-      class="flex flex-col md:flex-row justify-between items-end gap-8 mb-16"
-    >
-      <div class="space-y-4">
-        <div class="flex items-center gap-3">
-          <div class="h-[2px] w-8 bg-secondary"></div>
-          <span
-            class="font-label font-bold text-xs uppercase tracking-widest text-secondary"
-            >Curated</span
-          >
-        </div>
-        <h2
-          class="text-5xl font-headline font-black text-primary tracking-tighter"
-        >
-          ACTIVE COLLECTIONS
-        </h2>
+    <div class="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
+      <div class="space-y-2">
+        <h2 class="text-5xl font-headline font-black text-primary tracking-tighter">ACTIVE COLLECTIONS</h2>
+        <p class="text-sm font-body text-on-surface-variant">Curated rare artifacts currently accepting live bids.</p>
       </div>
-      <a
-        href="/auctions"
-        class="group flex items-center gap-3 font-headline font-bold text-sm uppercase tracking-widest text-primary hover:text-secondary transition-colors"
-      >
-        View All Archives
-        <Icon
-          icon="arrow_forward"
-          class="group-hover:translate-x-2 transition-transform"
-        />
+      <a href="/auctions" class="group flex items-center gap-3 font-headline font-bold text-xs uppercase tracking-[0.2em] text-primary hover:text-secondary transition-colors">
+        Browse Full Archive
+        <Icon icon="arrow_forward" class="group-hover:translate-x-2 transition-transform" />
       </a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
       {#each activeBooks as book, i (book.id)}
-        <div class={i === 1 ? "lg:translate-y-12" : ""}>
+        <div class={i === 1 ? 'lg:translate-y-16' : ''}>
           <AuctionCard auction={book as any} />
         </div>
       {/each}
@@ -218,75 +147,42 @@
 {#snippet howItWorks()}
   <section class="py-32 bg-surface-container-low" id="how-it-works">
     <div class="max-w-screen-2xl mx-auto px-4 md:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-        <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
+        <div class="lg:col-span-5 grid grid-cols-2 gap-4">
           <div class="space-y-4">
-            <div
-              class="aspect-[3/4] rounded-xl overflow-hidden shadow-lg transform translate-y-8"
-            >
-              <img
-                src={FALLBACK_IMAGE}
-                alt="Process 1"
-                class="w-full h-full object-cover"
-              />
+            <div class="aspect-square rounded-xl overflow-hidden shadow-lg grayscale hover:grayscale-0 transition-all duration-700">
+              <img src={FALLBACK_IMAGE} alt="Process 1" class="w-full h-full object-cover" />
             </div>
-            <div class="aspect-square rounded-xl overflow-hidden shadow-lg">
-              <img
-                src={FALLBACK_IMAGE}
-                alt="Process 2"
-                class="w-full h-full object-cover"
-              />
+            <div class="bg-secondary p-8 rounded-xl flex flex-col justify-end min-h-[160px]">
+              <Icon icon="language" class="text-3xl text-on-secondary mb-4" />
+              <span class="font-headline font-bold text-on-secondary text-sm uppercase tracking-widest">Global Live Bidding</span>
             </div>
           </div>
           <div class="space-y-4">
-            <div class="aspect-square rounded-xl overflow-hidden shadow-lg">
-              <img
-                src={FALLBACK_IMAGE}
-                alt="Process 3"
-                class="w-full h-full object-cover"
-              />
+            <div class="bg-primary-container p-8 rounded-xl flex flex-col justify-end min-h-[160px]">
+              <Icon icon="verified_user" class="text-3xl text-on-primary-container mb-4" />
+              <span class="font-headline font-bold text-on-primary-container text-sm uppercase tracking-widest">Certified Provenance</span>
             </div>
-            <div
-              class="aspect-[3/4] rounded-xl overflow-hidden shadow-lg transform -translate-y-8"
-            >
-              <img
-                src={FALLBACK_IMAGE}
-                alt="Process 4"
-                class="w-full h-full object-cover"
-              />
+            <div class="aspect-[3/4] rounded-xl overflow-hidden shadow-lg grayscale hover:grayscale-0 transition-all duration-700">
+              <img src={FALLBACK_IMAGE} alt="Process 2" class="w-full h-full object-cover" />
             </div>
           </div>
         </div>
 
-        <div class="space-y-12">
-          <div class="space-y-4">
-            <div class="flex items-center gap-3">
-              <div class="h-[2px] w-8 bg-secondary"></div>
-              <span
-                class="font-label font-bold text-xs uppercase tracking-widest text-secondary"
-                >Guide</span
-              >
-            </div>
-            <h2
-              class="text-5xl font-headline font-black text-primary tracking-tighter leading-none"
-            >
-              HOW TO ACQUIRE <br /> A MASTERPIECE
-            </h2>
-          </div>
+        <div class="lg:col-span-7 space-y-16">
+          <h2 class="text-6xl font-headline font-black text-primary tracking-tighter leading-none uppercase">
+            The Scholarly Path <br /> to Ownership
+          </h2>
 
-          <div class="space-y-8">
-            {#each [{ num: "01", title: "Curated Search", desc: "Browse our expertly verified selection of rare first editions and manuscripts." }, { num: "02", title: "Strategic Bidding", desc: "Place your bid in real-time and monitor competitive activity through our dashboard." }, { num: "03", title: "Secure Acquisition", desc: "Upon winning, complete your transaction through our encrypted Stripe integration." }] as step}
-              <div class="flex gap-6">
-                <span class="font-headline font-black text-3xl text-primary/20"
-                  >{step.num}</span
-                >
-                <div class="space-y-1">
-                  <h3 class="font-headline font-bold text-xl text-primary">
-                    {step.title}
-                  </h3>
-                  <p class="font-body text-on-surface-variant leading-relaxed">
-                    {step.desc}
-                  </p>
+          <div class="space-y-12">
+            {#each [{ num: '01', title: 'Curated Authentication', desc: 'Every artifact undergoes rigorous physical examination by our Senior Curators to verify edition, condition, and provenance history.' }, { num: '02', title: 'Live Auction Dynamics', desc: 'Participate in high-stakes bidding sessions where digital and floor bidders compete in real-time for exclusive literary treasures.' }, { num: '03', title: 'Secured Archival Delivery', desc: 'Successful acquisitions are climate-controlled packed and shipped via white-glove logistics partners specialized in rare goods.' }] as step}
+              <div class="flex gap-8 group">
+                <span class="font-headline font-bold text-xs text-secondary bg-secondary/5 w-10 h-10 rounded flex items-center justify-center flex-shrink-0 group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-500">
+                  {step.num}
+                </span>
+                <div class="space-y-2">
+                  <h3 class="font-headline font-black text-2xl text-primary tracking-tight">{step.title}</h3>
+                  <p class="font-body text-on-surface-variant leading-relaxed max-w-xl">{step.desc}</p>
                 </div>
               </div>
             {/each}
@@ -298,30 +194,31 @@
 {/snippet}
 
 {#snippet cta()}
-  <section class="relative py-24 bg-primary overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
-      <div
-        class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"
-      ></div>
+  <section class="relative py-32 bg-primary overflow-hidden">
+    <!-- Texture overlay -->
+    <div class="absolute inset-0 opacity-5 pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#ffffff_2px,transparent_1px)] [background-size:32px_32px]"></div>
     </div>
 
-    <div class="relative max-w-4xl mx-auto px-4 text-center space-y-8">
-      <h2
-        class="text-5xl md:text-7xl font-headline font-black text-on-primary tracking-tighter leading-none"
-      >
-        READY TO START YOUR <br /> <span class="text-secondary">LEGACY</span> COLLECTION?
+    <div class="relative max-w-4xl mx-auto px-4 text-center space-y-12">
+      <h2 class="text-6xl md:text-8xl font-headline font-black text-on-primary tracking-tighter leading-none uppercase">
+        Start Your Legacy <br /> Collection
       </h2>
-      <p class="text-xl font-body text-on-primary/60 max-w-xl mx-auto italic">
-        "Every book has two stories — the one written on its pages, and the one
-        of its journey through time."
+      <p class="text-lg font-body text-on-primary/50 max-w-2xl mx-auto">
+        Join an elite community of bibliophiles and scholars. Gain access to private previews and exclusive live auction events.
       </p>
-      <div class="flex gap-4 items-center justify-center pt-4">
+      <div class="flex flex-wrap gap-4 items-center justify-center">
         <a
           href={page.data.sessionId ? "/dashboard/create" : "/auth/login"}
-          class="px-10 py-4 bg-secondary text-on-secondary rounded-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 font-headline font-bold uppercase tracking-widest text-sm"
+          class="px-12 py-5 bg-secondary text-on-secondary rounded-lg hover:shadow-[0_20px_40px_-10px_rgba(175,40,0,0.5)] transition-all duration-500 transform hover:-translate-y-1 font-headline font-bold uppercase tracking-widest text-sm"
         >
-          {page.data.sessionId ? "Create Listing" : "Join the Archive"}
+          Start Collecting
         </a>
+        <button
+          class="px-12 py-5 border-2 border-on-primary/30 text-on-primary rounded-lg hover:bg-on-primary/10 transition-all duration-500 font-headline font-bold uppercase tracking-widest text-sm"
+        >
+          Request Catalog
+        </button>
       </div>
     </div>
   </section>

@@ -1,79 +1,22 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { ChevronDoubleUpOutline, ClockOutline } from "flowbite-svelte-icons";
   import type { PageProps } from "./$types";
   import { FALLBACK_IMAGE } from "./dashboard/shared/constants";
-  import { Section, Schedule, ScheduleItem } from "flowbite-svelte-blocks";
+  import Icon from "$lib/components/Icon.svelte";
+  import AuctionCard from "$lib/components/AuctionCard.svelte";
 
   let { data }: PageProps = $props();
 
-  const formatEndDate = (endDate: Date | string) => {
-    const end = new Date(endDate);
-    const now = new Date();
-    const diff = end.getTime() - now.getTime();
-    if (diff <= 0) return "Ended";
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-    if (days > 0) return `${days} day${days > 1 ? "s" : ""}`;
-
-    return `${hours} hour${hours !== 1 ? "s" : ""}`;
-  };
-
-  interface Stat {
-    // activeAuctions: number;
-    transactions: number;
-    rareBooks: number;
-    happyCollectors: number;
-    totalSales: number;
-  }
-
-  // create stats from data
-  const stats: Stat = {
-    // activeAuctions: data.books.filter(
-    //   (book) => new Date(book.endDate) > new Date()
-    // ).length,
+  const stats = {
     transactions: data.transactionCount,
     rareBooks: data.books.length,
     happyCollectors: data.userCount,
-    // happyCollectors: (() => {
-    //   const now = new Date();
-    //   const winners = new Set<string>();
-
-    //   data.books.forEach((book) => {
-    //     if (new Date(book.endDate) <= now && book.bids && book.bids.length) {
-    //       const winner = book.bids.reduce((max, bid) =>
-    //         bid.amount > max.amount ? bid : max
-    //       );
-    //       winners.add(winner.userId);
-    //     }
-    //   });
-    //   return winners.size;
-    // })(),
     totalSales: data.books.reduce(
       (acc, book) => acc + (book.currentBid || 0),
-      0
+      0,
     ),
   };
 
-  // ending within 3 days
-  const endingSoonBooks = data.books.filter((b) => {
-    const end = new Date(b.endDate).getTime();
-    const now = Date.now();
-    const diff = end - now;
-    return diff > 0 && diff <= 3 * 24 * 60 * 60 * 1000;
-  });
-
-  const formatEndingSoonDate = (date: Date) => {
-    return new Date(date).toLocaleString("en-GB", {
-      weekday: "long",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  // filter books that are not ended and sort by endDate
   const activeBooks = data.books
     .filter((b) => {
       const end = new Date(b.endDate).getTime();
@@ -85,262 +28,268 @@
       const endB = new Date(b.endDate).getTime();
       return endA - endB;
     })
-    .slice(0, 8);
+    .slice(0, 3);
 </script>
 
 <svelte:head>
-  <title>Book Bidding</title>
+  <title>Book Bidding | Rare Literary Treasures</title>
 </svelte:head>
 
-<div class="bg-background">
-  <!-- Hero Section -->
+<div class="bg-background overflow-hidden">
   {@render hero()}
-
-  <!-- Stats Section -->
   {@render statistics()}
-
-  <!-- Featured Items -->
-  {@render featuredItems()}
-
-  <!-- How It Works -->
+  {@render activeCollections()}
   {@render howItWorks()}
-
-  <!-- Ending Soon (within 3 days) -->
-  {#if endingSoonBooks.length !== 0}
-    {@render endingSoon()}
-  {/if}
-
-  <!-- CTA Section -->
   {@render cta()}
 </div>
 
-{#snippet endingSoon()}
-  <div id="ending-soon">
-    <Section
-      name="schedule"
-      sectionClass="bg-white dark:bg-gray-900 antialiased px-4 md:px-8 py-8"
-    >
-      <Schedule scheduleName="Ending Soon">
-        {#snippet subtitle()}
-          <div class="mt-4">
-            <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Bid now to reserve the book you are interested in!
-            </p>
-          </div>
-        {/snippet}
-        {#each endingSoonBooks as item}
-          <div class="flex gap-2 items-center">
-            <!-- <ClockOutline class="shrink-0 h-6 w-6" /> -->
-            <p class="text-lg">⏰</p>
-            <ScheduleItem
-              item={{
-                title: item.name,
-                href: `/auctions/${item.id}`,
-                time: formatEndingSoonDate(item.endDate),
-              }}
-            />
-          </div>
-        {/each}
-      </Schedule>
-    </Section>
-  </div>
-{/snippet}
+{#snippet hero()}
+  <section class="relative pt-20 pb-32 px-4 md:px-8 max-w-screen-2xl mx-auto">
+    <!-- Decorative background elements -->
+    <div class="absolute top-0 right-0 -z-10 opacity-10">
+      <span
+        class="font-headline text-[30rem] leading-none text-primary italic select-none pointer-events-none"
+        >"</span
+      >
+    </div>
 
-{#snippet featuredItems()}
-  <section class="py-20 sm:px-6 lg:px-8 border-b border-border">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-4">
-          Featured Auctions
-        </h2>
-        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Handpicked collection of the finest books currently up for auction
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-7 space-y-8">
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="h-[2px] w-12 bg-secondary"></div>
+            <span
+              class="font-label font-bold text-xs uppercase tracking-[0.3em] text-secondary"
+              >Est. 2024</span
+            >
+          </div>
+          <h1
+            class="text-6xl md:text-8xl font-headline font-black text-primary leading-[0.9] tracking-tighter"
+          >
+            DISCOVER RARE <br /> <span class="text-secondary">BOOKS</span>, WIN
+            <br /> TREASURES.
+          </h1>
+        </div>
+
+        <p
+          class="text-xl font-body text-on-surface-variant max-w-xl leading-relaxed"
+        >
+          Join thousands of collectors bidding on the world's most sought-after
+          first editions, signed copies, and literary treasures.
         </p>
+
+        <div class="flex flex-wrap gap-4 pt-4">
+          <a
+            href="/auctions"
+            class="px-10 py-4 bg-primary text-on-primary rounded-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 font-headline font-bold uppercase tracking-widest text-sm"
+          >
+            Browse Auctions
+          </a>
+          <a
+            href={page.data.sessionId ? "/dashboard" : "/auth/login"}
+            class="px-10 py-4 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-500 font-headline font-bold uppercase tracking-widest text-sm"
+          >
+            Join Now
+          </a>
+        </div>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 gap-2.5">
-        {#each activeBooks as book (book.id)}
-          <a href={`/auctions/${book.id}`} class="group">
-            <div
-              class="bg-card min-h-[447px] rounded-md overflow-hidden border border-border transition-all duration-300 hover:shadow-xl"
+      <div class="lg:col-span-5 relative">
+        <!-- Main Hero Image -->
+        <div
+          class="relative z-10 transform -rotate-3 hover:rotate-0 transition-transform duration-700"
+        >
+          <div
+            class="aspect-[4/5] rounded-2xl overflow-hidden book-shadow border-b-4 border-secondary"
+          >
+            <img
+              src={FALLBACK_IMAGE}
+              alt="Rare book collection"
+              class="w-full h-full object-cover"
+            />
+          </div>
+
+          <!-- Glassmorphism Detail Card -->
+          <div
+            class="absolute -bottom-8 -left-8 glass-overlay p-6 rounded-xl border border-white/20 shadow-2xl max-w-[240px] hidden md:block"
+          >
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-2 h-2 rounded-full bg-secondary"></div>
+              <span
+                class="font-label font-bold text-[10px] uppercase tracking-widest text-secondary"
+                >Live Auction</span
+              >
+            </div>
+            <h3
+              class="font-headline font-bold text-lg text-primary leading-tight mb-2"
             >
-              <!-- Image -->
-              <div class="relative h-64 overflow-hidden bg-muted">
-                <img
-                  src={book.fileKey || FALLBACK_IMAGE}
-                  alt={book.name}
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div
-                  class="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold"
+              The Great Gatsby
+            </h3>
+            <div class="flex justify-between items-end">
+              <div class="flex flex-col">
+                <span
+                  class="text-[9px] font-label font-bold text-outline uppercase"
+                  >Current Bid</span
                 >
-                  {book.condition}
-                </div>
-                <div
-                  class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-4 text-white"
+                <span class="font-headline font-black text-xl text-primary"
+                  >$12,450</span
                 >
-                  <p class="text-sm opacity-90">
-                    {formatEndDate(book.endDate)}
+              </div>
+              <Icon icon="trending_up" class="text-secondary text-xl" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Decorative elements -->
+        <div
+          class="absolute -top-12 -right-12 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -z-10"
+        ></div>
+        <div
+          class="absolute -bottom-12 -left-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-10"
+        ></div>
+      </div>
+    </div>
+  </section>
+{/snippet}
+
+{#snippet statistics()}
+  <section
+    class="py-12 border-y border-outline-variant/10 bg-surface-container-lowest"
+  >
+    <div class="max-w-screen-2xl mx-auto px-4 md:px-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        {#each [{ label: "Rare Books", value: stats.rareBooks }, { label: "Transactions", value: stats.transactions }, { label: "Happy Collectors", value: stats.happyCollectors }, { label: "Total Value", value: `$${(stats.totalSales / 1000).toFixed(1)}k+` }] as item}
+          <div class="flex flex-col items-center text-center">
+            <span class="font-headline font-black text-4xl text-primary mb-1"
+              >{item.value}</span
+            >
+            <span
+              class="font-label font-bold text-[10px] uppercase tracking-[0.2em] text-outline"
+              >{item.label}</span
+            >
+          </div>
+        {/each}
+      </div>
+    </div>
+  </section>
+{/snippet}
+
+{#snippet activeCollections()}
+  <section class="py-24 px-4 md:px-8 max-w-screen-2xl mx-auto">
+    <div
+      class="flex flex-col md:flex-row justify-between items-end gap-8 mb-16"
+    >
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="h-[2px] w-8 bg-secondary"></div>
+          <span
+            class="font-label font-bold text-xs uppercase tracking-widest text-secondary"
+            >Curated</span
+          >
+        </div>
+        <h2
+          class="text-5xl font-headline font-black text-primary tracking-tighter"
+        >
+          ACTIVE COLLECTIONS
+        </h2>
+      </div>
+      <a
+        href="/auctions"
+        class="group flex items-center gap-3 font-headline font-bold text-sm uppercase tracking-widest text-primary hover:text-secondary transition-colors"
+      >
+        View All Archives
+        <Icon
+          icon="arrow_forward"
+          class="group-hover:translate-x-2 transition-transform"
+        />
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {#each activeBooks as book, i (book.id)}
+        <div class={i === 1 ? "lg:translate-y-12" : ""}>
+          <AuctionCard auction={book as any} />
+        </div>
+      {/each}
+    </div>
+  </section>
+{/snippet}
+
+{#snippet howItWorks()}
+  <section class="py-32 bg-surface-container-low" id="how-it-works">
+    <div class="max-w-screen-2xl mx-auto px-4 md:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-4">
+            <div
+              class="aspect-[3/4] rounded-xl overflow-hidden shadow-lg transform translate-y-8"
+            >
+              <img
+                src={FALLBACK_IMAGE}
+                alt="Process 1"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="aspect-square rounded-xl overflow-hidden shadow-lg">
+              <img
+                src={FALLBACK_IMAGE}
+                alt="Process 2"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="aspect-square rounded-xl overflow-hidden shadow-lg">
+              <img
+                src={FALLBACK_IMAGE}
+                alt="Process 3"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div
+              class="aspect-[3/4] rounded-xl overflow-hidden shadow-lg transform -translate-y-8"
+            >
+              <img
+                src={FALLBACK_IMAGE}
+                alt="Process 4"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-12">
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="h-[2px] w-8 bg-secondary"></div>
+              <span
+                class="font-label font-bold text-xs uppercase tracking-widest text-secondary"
+                >Guide</span
+              >
+            </div>
+            <h2
+              class="text-5xl font-headline font-black text-primary tracking-tighter leading-none"
+            >
+              HOW TO ACQUIRE <br /> A MASTERPIECE
+            </h2>
+          </div>
+
+          <div class="space-y-8">
+            {#each [{ num: "01", title: "Curated Search", desc: "Browse our expertly verified selection of rare first editions and manuscripts." }, { num: "02", title: "Strategic Bidding", desc: "Place your bid in real-time and monitor competitive activity through our dashboard." }, { num: "03", title: "Secure Acquisition", desc: "Upon winning, complete your transaction through our encrypted Stripe integration." }] as step}
+              <div class="flex gap-6">
+                <span class="font-headline font-black text-3xl text-primary/20"
+                  >{step.num}</span
+                >
+                <div class="space-y-1">
+                  <h3 class="font-headline font-bold text-xl text-primary">
+                    {step.title}
+                  </h3>
+                  <p class="font-body text-on-surface-variant leading-relaxed">
+                    {step.desc}
                   </p>
                 </div>
               </div>
-
-              <!-- Content -->
-              <div class="p-2 md:p-4">
-                <h3
-                  class="font-medium text-lg text-foreground mb-1 line-clamp-2 group-hover:text-primary transition-colors"
-                >
-                  {book.name}
-                </h3>
-                <p class="text-sm text-muted-foreground mb-4">
-                  {book.author}
-                </p>
-
-                <div class="flex items-center justify-between">
-                  <div class="flex flex-col gap-1.5">
-                    <p class="text-xs text-muted-foreground">Current Bid</p>
-                    <div class="flex gap-1.5 items-baseline">
-                      {#if book.startingPrice < book.currentBid}
-                        <ChevronDoubleUpOutline
-                          class="shrink-0 text-emerald-500 self-baseline"
-                        />
-                      {/if}
-                      <p class="text-2xl tracking-wider font-koulen">
-                        ${book.currentBid.toLocaleString()}
-                      </p>
-                      {#if book.startingPrice < book.currentBid}
-                        <p
-                          class="text-xs tracking-wider font-koulen text-destructive line-through"
-                        >
-                          ${book.startingPrice.toLocaleString()}
-                        </p>
-                      {/if}
-                    </div>
-                  </div>
-                  <div
-                    class="hidden w-10 h-10 bg-primary/10 rounded-lg md:flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                  >
-                    →
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        {/each}
-      </div>
-
-      <div class="text-center mt-12">
-        <a
-          href="/auctions"
-          class="inline-block font-koulen tracking-wider px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-        >
-          View All Auctions
-        </a>
-      </div>
-    </div>
-  </section>
-{/snippet}
-
-<!-- Hero Section -->
-{#snippet hero()}
-  <section
-    class="relative overflow-hidden bg-linear-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground pt-20 pb-32"
-  >
-    <div class="absolute inset-0 overflow-hidden">
-      <div
-        class="absolute -top-40 -right-40 w-80 h-80 bg-primary-foreground/5 rounded-full blur-3xl"
-      ></div>
-      <div
-        class="absolute -bottom-20 -left-40 w-96 h-96 bg-primary-foreground/5 rounded-full blur-3xl"
-      ></div>
-    </div>
-
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <div>
-          <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Discover Rare Books, Win Treasures
-          </h1>
-          <p
-            class="text-xl text-primary-foreground/90 mb-8 max-w-lg leading-relaxed"
-          >
-            Join thousands of collectors bidding on the world's most
-            sought-after first editions, signed copies, and literary treasures.
-          </p>
-          <div class="flex gap-4 font-koulen tracking-wider items-center">
-            <a
-              href="/auctions"
-              class="px-8 py-3 bg-primary-foreground text-primary rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Browse Auctions
-            </a>
-            <a
-              href={page.data.sessionId ? "/dashboard" : "/auth/login"}
-              class="px-8 py-3 border-2 border-primary-foreground text-primary-foreground rounded-lg hover:bg-primary-foreground/10 transition-all duration-300"
-            >
-              Join Now
-            </a>
-          </div>
-        </div>
-
-        <div class="relative h-96 hidden lg:block">
-          <div
-            class="absolute inset-0 bg-linear-to-br from-primary-foreground/10 to-transparent rounded-2xl"
-          ></div>
-          <img
-            src={FALLBACK_IMAGE}
-            alt="Rare book collection"
-            class="w-full h-full object-cover rounded-md shadow-2xl"
-          />
-        </div>
-      </div>
-    </div>
-  </section>
-{/snippet}
-
-<!-- Statistics Section -->
-{#snippet statistics()}
-  <section class="py-16 bg-card border-b border-border">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div class="text-center">
-          <div
-            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
-          >
-            {stats.rareBooks}
-          </div>
-          <div class="text-sm md:text-base text-muted-foreground">
-            Rare Books
-          </div>
-        </div>
-        <div class="text-center">
-          <div
-            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
-          >
-            {stats.transactions}
-          </div>
-          <div class="text-sm md:text-base text-muted-foreground">
-            Transactions
-          </div>
-        </div>
-        <div class="text-center">
-          <div
-            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
-          >
-            {stats.happyCollectors}
-          </div>
-          <div class="text-sm md:text-base text-muted-foreground">
-            Happy Collectors
-          </div>
-        </div>
-        <div class="text-center">
-          <div
-            class="text-3xl md:text-4xl font-bold text-primary mb-2 font-koulen tracking-wider"
-          >
-            {`$${stats.totalSales}`}
-          </div>
-          <div class="text-sm md:text-base text-muted-foreground">
-            Total Values
+            {/each}
           </div>
         </div>
       </div>
@@ -348,59 +297,30 @@
   </section>
 {/snippet}
 
-<!-- How It Works Section -->
-{#snippet howItWorks()}
-  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50" id="how-it-works">
-    <div class="max-w-7xl mx-auto">
-      <h2
-        class="text-4xl md:text-5xl font-bold text-foreground text-center mb-16"
-      >
-        How It Works
-      </h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {#each [{ num: "01", title: "Browse", desc: "Explore our curated collection of rare and collectible books" }, { num: "02", title: "Bid", desc: "Place your bid and compete with collectors worldwide" }, { num: "03", title: "Win", desc: "Secure your treasure with the highest bid" }, { num: "04", title: "Receive", desc: "Get your book safely shipped to your door" }] as step (step.num)}
-          <div class="text-center">
-            <div class="text-5xl font-bold text-primary/30 mb-4 font-koulen">
-              {step.num}
-            </div>
-            <h3 class="text-xl font-semibold text-foreground mb-2">
-              {step.title}
-            </h3>
-            <p class="text-muted-foreground">{step.desc}</p>
-          </div>
-        {/each}
-      </div>
-    </div>
-  </section>
-{/snippet}
-
-<!-- Call-to-Action Section -->
 {#snippet cta()}
-  <section
-    class="py-16 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground"
-  >
-    <div class="max-w-2xl mx-auto text-center">
-      <h2 class="text-3xl md:text-4xl font-bold mb-4">
-        Ready to Start Collecting?
-      </h2>
-      <p class="text-lg opacity-90 mb-8">
-        Sign up today and get access to exclusive auctions and rare finds.
-      </p>
+  <section class="relative py-24 bg-primary overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
       <div
-        class="flex gap-4 items-center justify-center flex-wrap font-koulen tracking-wider"
+        class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"
+      ></div>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto px-4 text-center space-y-8">
+      <h2
+        class="text-5xl md:text-7xl font-headline font-black text-on-primary tracking-tighter leading-none"
       >
+        READY TO START YOUR <br /> <span class="text-secondary">LEGACY</span> COLLECTION?
+      </h2>
+      <p class="text-xl font-body text-on-primary/60 max-w-xl mx-auto italic">
+        "Every book has two stories — the one written on its pages, and the one
+        of its journey through time."
+      </p>
+      <div class="flex gap-4 items-center justify-center pt-4">
         <a
           href={page.data.sessionId ? "/dashboard/create" : "/auth/login"}
-          class="px-6 py-2 bg-primary-foreground text-primary rounded-lg hover:shadow-lg transition-all"
+          class="px-10 py-4 bg-secondary text-on-secondary rounded-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 font-headline font-bold uppercase tracking-widest text-sm"
         >
-          {page.data.sessionId ? "Create Auction" : "Sign In"}
-        </a>
-        <a
-          href="/auctions"
-          class="px-6 py-2 border-2 border-primary-foreground rounded-lg hover:bg-primary-foreground/10 transition-all"
-        >
-          Browse Auctions
+          {page.data.sessionId ? "Create Listing" : "Join the Archive"}
         </a>
       </div>
     </div>
